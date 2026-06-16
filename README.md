@@ -9,7 +9,8 @@ Skills are organized into top-level folders by **duty** (what the skill helps yo
 ```
 .
 ├── testing/            # writing, running, and debugging tests
-├── frontend/           # building & optimizing web UI code
+├── frontend/           # building & optimizing web UI code (React/Next)
+├── vue/                # Vue 3 + ecosystem (Pinia, Router, Vite, Vitest, Nuxt)
 ├── flutter/            # Flutter / Dart app development
 ├── golang/             # Go language development
 ├── unity/              # Unity game development
@@ -37,6 +38,22 @@ Skills are organized into top-level folders by **duty** (what the skill helps yo
 | Skill | Source | Installs | Purpose |
 |-------|--------|----------|---------|
 | `react-best-practices` | vercel-labs/agent-skills | 480K | React/Next.js performance — 70 ranked rules across 8 categories |
+
+### vue/  — `antfu/skills` (Anthony Fu — Vue / Vite / VueUse core team)
+
+| Skill | Purpose |
+|-------|---------|
+| `vue` | Vue 3 reference — Composition API, `<script setup>` macros, reactivity, built-ins (from official vuejs/docs) |
+| `vue-best-practices` | "Must-use" Vue workflow — architecture, reactivity, SFC, data flow |
+| `vue-router-best-practices` | Vue Router 4 — guards, params, route lifecycle |
+| `vue-testing-best-practices` | Vitest + Vue Test Utils, component testing, E2E |
+| `pinia` | Official Vue state management — stores, getters, actions |
+| `vueuse-functions` | VueUse composables |
+| `vite` | Vite build tool — config, plugins, SSR, Rolldown migration |
+| `vitest` | Vitest unit testing framework |
+| `nuxt` | Nuxt full-stack Vue — SSR, auto-imports, file routing |
+
+_~26K installs (top skill). Subsumes the `vuejs-ai`/`hyf0` sets, which are identical mirrors of each other — those were deliberately skipped to avoid duplication._
 
 ### flutter/  — official `flutter/skills` (Flutter team)
 
