@@ -1,8 +1,7 @@
 # Skills
 
-A curated workspace of Claude Code Agent Skills — **38 skills across 8 duty
-folders**, each vetted by source reputation, install count, and content quality,
-then downloaded directly from its upstream GitHub repo.
+A curated workspace of Claude Code Agent Skills — **59 skills across 8 duty
+folders** — vetted/imported from upstream GitHub repos or authored locally.
 
 | Folder | Skills | Focus |
 |--------|:------:|-------|
@@ -12,7 +11,7 @@ then downloaded directly from its upstream GitHub repo.
 | `flutter/` | 10 | Flutter / Dart app development |
 | `golang/` | 8 | Go language development |
 | `unity/` | 1 | Unity DOTS/ECS |
-| `documentation/` | 1 | Technical writing |
+| `career/` | 22 | Resume, CV, cover letter, LinkedIn, interview, job-search |
 | `product-planning/` | 1 | Specs & requirements |
 
 ## Layout
@@ -27,10 +26,13 @@ Skills are organized into top-level folders by **duty** (what the skill helps yo
 ├── flutter/            # Flutter / Dart app development
 ├── golang/             # Go language development
 ├── unity/              # Unity game development
-├── documentation/      # technical writing
+├── career/             # resume / CV / job-search (locally authored)
 ├── product-planning/   # specs & requirements
 └── impact-driven-writing/   # writing-focused skills collection (own git repo + remote)
 ```
+
+Technical-writing skills (`documentation-writer`) now live under
+`impact-driven-writing/skills/`, alongside the other writing-focused skills.
 
 ## Curated skills
 
@@ -106,11 +108,35 @@ _~5–6K installs each. Curated core of an ~30-skill set (`golang-pro` deliberat
 |-------|--------|----------|---------|
 | `unity-ecs-patterns` | wshobson/agents | 8.2K | Unity DOTS/ECS — Jobs, Burst, archetypes. **ECS-specific**, not general MonoBehaviour gameplay. |
 
-### documentation/
+### career/  — locally authored (from `attitude-portfolio`)
 
-| Skill | Source | Installs | Purpose |
-|-------|--------|----------|---------|
-| `documentation-writer` | github/awesome-copilot | 21K | Technical docs via the Diátaxis framework |
+Resume / CV / job-search skill set. `targeted-cv-generator` and
+`xue-hesheng-resume` are personal (tied to Aaron Xue's own CV pipeline).
+
+| Skill | Purpose |
+|-------|---------|
+| `resume-tailor` | Customize a resume to a specific posting, truthfully |
+| `resume-bullet-writer` | Turn weak bullets into achievement statements with metrics |
+| `resume-quantifier` | Add/estimate metrics where exact data is missing |
+| `resume-section-builder` | Build targeted sections per experience level/role |
+| `resume-formatter` | ATS-friendly, clean scannable layouts |
+| `resume-ats-optimizer` | ATS compatibility + keyword-match analysis |
+| `resume-version-manager` | Track master + tailored resume versions |
+| `tech-resume-optimizer` | Optimize for software / PM / technical roles |
+| `executive-resume-writer` | C-suite / VP strategic-leadership resumes |
+| `academic-cv-builder` | Academic CVs — publications, grants, teaching |
+| `creative-portfolio-resume` | Balance visual design with ATS for creative roles |
+| `cover-letter-generator` | Personalized cover letters from resume + JD |
+| `linkedin-profile-optimizer` | Searchability / recruiter visibility / engagement |
+| `portfolio-case-study-writer` | Turn resume bullets into portfolio case studies |
+| `interview-prep-generator` | STAR stories, practice questions, talking points |
+| `job-description-analyzer` | Match scores, gap analysis, application strategy |
+| `career-changer-translator` | Translate transferable skills across industries |
+| `salary-negotiation-prep` | Market rates, strategy, counter-offer scripts |
+| `offer-comparison-analyzer` | Side-by-side total-comp offer comparison |
+| `reference-list-builder` | Format references and prep reference materials |
+| `targeted-cv-generator` | _(personal)_ Aaron's targeted CV pipeline (rendercv → PDF) |
+| `xue-hesheng-resume` | _(personal)_ Genre-targeted resume for Aaron Xue (STAR → PDF) |
 
 ### product-planning/
 
@@ -149,4 +175,7 @@ symlinks take effect in the next Claude Code session.
 
 `impact-driven-writing/` is a self-contained project with its own git history and
 GitHub remote (`casualattitude0/impact-driven-writing`). It is intentionally
-ignored by this repo's git — work on it from inside that directory.
+ignored by this repo's git — work on it from inside that directory. Its
+`skills/` folder holds the writing-focused skills (`avoid-ai-writing`,
+`showcase-writer`, `humanizer-tw`, `humanizer-zh-tw`, and now
+`documentation-writer`).
