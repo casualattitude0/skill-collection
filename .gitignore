@@ -1,0 +1,7 @@
+.DS_Store
+node_modules/
+*.tgz
+.env
+
+# Self-contained writing project with its own git repo / remote
+impact-driven-writing/
