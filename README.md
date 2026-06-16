@@ -1,6 +1,19 @@
 # Skills
 
-A general workspace for Claude Code Agent Skills.
+A curated workspace of Claude Code Agent Skills — **38 skills across 8 duty
+folders**, each vetted by source reputation, install count, and content quality,
+then downloaded directly from its upstream GitHub repo.
+
+| Folder | Skills | Focus |
+|--------|:------:|-------|
+| `testing/` | 7 | TDD, Playwright, pytest, frontend testing |
+| `react/` | 1 | React / Next.js performance |
+| `vue/` | 9 | Vue 3 + ecosystem (Pinia, Router, Vite, Vitest, Nuxt) |
+| `flutter/` | 10 | Flutter / Dart app development |
+| `golang/` | 8 | Go language development |
+| `unity/` | 1 | Unity DOTS/ECS |
+| `documentation/` | 1 | Technical writing |
+| `product-planning/` | 1 | Specs & requirements |
 
 ## Layout
 
@@ -9,7 +22,7 @@ Skills are organized into top-level folders by **duty** (what the skill helps yo
 ```
 .
 ├── testing/            # writing, running, and debugging tests
-├── frontend/           # building & optimizing web UI code (React/Next)
+├── react/              # React / Next.js development
 ├── vue/                # Vue 3 + ecosystem (Pinia, Router, Vite, Vitest, Nuxt)
 ├── flutter/            # Flutter / Dart app development
 ├── golang/             # Go language development
@@ -33,7 +46,7 @@ Skills are organized into top-level folders by **duty** (what the skill helps yo
 | `frontend-testing-best-practices` | sergiodxa | 1.7K | Frontend testing rules (prefer E2E, minimize mocking) |
 | `playwright-generate-test` | github/awesome-copilot | 13K | Generate Playwright tests by exploring a live site |
 
-### frontend/
+### react/
 
 | Skill | Source | Installs | Purpose |
 |-------|--------|----------|---------|
@@ -106,11 +119,34 @@ _~5–6K installs each. Curated core of an ~30-skill set (`golang-pro` deliberat
 | `prd` | github/awesome-copilot | 19K | Product Requirements Documents — strict schema + discovery interview |
 
 Each skill folder contains a `SKILL.md` (plus supporting references). Skills were
-downloaded directly from their upstream GitHub repos (not symlinked via the
-`skills` CLI) so this repo stays self-contained and version-controlled.
+downloaded directly from their upstream GitHub repos (not via the `skills` CLI)
+so this repo stays self-contained and version-controlled.
+
+## Activation
+
+This repo is the **single source of truth**. Skills are activated globally via
+symlinks in `~/.claude/skills/`, each named by the skill's frontmatter `name`
+and pointing back into the duty folder here — so editing a skill in this repo is
+reflected in every project, and the CLI's flat install layout is avoided.
+
+```bash
+# activate a skill globally (run from the repo root)
+ln -sfn "$PWD/<folder>/<skill>" ~/.claude/skills/<frontmatter-name>
+
+# deactivate (the repo copy stays intact)
+rm ~/.claude/skills/<frontmatter-name>
+```
+
+Symlinks live in `~/.claude/skills/` and are **not** part of this repo. New
+symlinks take effect in the next Claude Code session.
+
+## Adding a skill
+
+1. Drop the skill folder into the matching duty folder (or create a new
+   duty-named top-level folder).
+2. Symlink it into `~/.claude/skills/` (see above).
+3. Add a row to the relevant table in this README.
 
 `impact-driven-writing/` is a self-contained project with its own git history and
 GitHub remote (`casualattitude0/impact-driven-writing`). It is intentionally
 ignored by this repo's git — work on it from inside that directory.
-
-Add new skill collections as their own duty-named top-level folders here.
