@@ -25,10 +25,9 @@ ln -sfn "$PWD/<folder>/<skill>" ~/.claude/skills/<skill>
 rm ~/.claude/skills/<skill>
 ```
 
-`impact-driven-writing/` is a self-contained writing-skills project kept as a
-gitignored folder here (upstream:
-[`casualattitude0/impact-driven-writing`](https://github.com/casualattitude0/impact-driven-writing)).
-It ships its own `npx` installer for distributing those skills, and is indexed below.
+`impact-driven-writing/` is a local folder of writing-focused skills, indexed
+below. It also carries a small `npx` installer (`bin/install.js`) for
+distributing those skills.
 
 ## Skills
 
@@ -105,8 +104,6 @@ It ships its own `npx` installer for distributing those skills, and is indexed b
 | `prd` | [github/awesome-copilot](https://github.com/github/awesome-copilot) | Product Requirements Documents |
 
 ### impact-driven-writing/ — writing skills
-
-Lives in the separate [`casualattitude0/impact-driven-writing`](https://github.com/casualattitude0/impact-driven-writing) repo.
 
 | Skill | Source / Author | Purpose |
 |-------|-----------------|---------|

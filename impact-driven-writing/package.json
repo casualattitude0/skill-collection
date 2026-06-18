@@ -1,0 +1,27 @@
+{
+  "name": "ai-skills",
+  "version": "0.1.0",
+  "description": "A collection of Claude Code Agent Skills, installable via npx.",
+  "bin": {
+    "ai-skills": "bin/install.js"
+  },
+  "files": [
+    "bin/",
+    "skills/",
+    "README.md"
+  ],
+  "scripts": {
+    "install-skills": "node bin/install.js"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "agent-skills",
+    "skills",
+    "ai"
+  ],
+  "license": "MIT"
+}
