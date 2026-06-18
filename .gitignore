@@ -3,5 +3,6 @@ node_modules/
 *.tgz
 .env
 
-# Self-contained writing project with its own git repo / remote
-impact-driven-writing/
+# Personal resume skills — kept local-only, not published
+career/xue-hesheng-resume/
+career/targeted-cv-generator/
