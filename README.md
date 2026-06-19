@@ -12,6 +12,7 @@ installed from upstream GitHub repos; each is activated by symlinking it into
 | `flutter/` | 10 | Flutter / Dart app development |
 | `golang/` | 8 | Go language development |
 | `unity/` | 1 | Unity DOTS/ECS patterns |
+| `design/` | 1 | UI/UX design principles & accessibility |
 | `product-planning/` | 1 | Product requirements docs |
 | `impact-driven-writing/` | 5 | Writing — AI-ism removal, humanizer, showcase, docs |
 
@@ -96,6 +97,12 @@ distributing those skills.
 | Skill | Source | Purpose |
 |-------|--------|---------|
 | `unity-ecs-patterns` | [wshobson/agents](https://github.com/wshobson/agents) | Unity DOTS/ECS — Jobs, Burst, archetypes |
+
+### design/
+
+| Skill | Source | Purpose |
+|-------|--------|---------|
+| `typeui-fundamentals` | [bergside/typeui](https://github.com/bergside/typeui) | Design-system-agnostic UI/UX principles — hierarchy, 30 UX laws, typography, spacing, WCAG accessibility |
 
 ### product-planning/
 
