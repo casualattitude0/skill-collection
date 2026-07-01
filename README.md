@@ -13,6 +13,7 @@ installed from upstream GitHub repos; each is activated by symlinking it into
 | `golang/` | 8 | Go language development |
 | `unity/` | 1 | Unity DOTS/ECS patterns |
 | `design/` | 2 | UI/UX design principles, accessibility & AI-frontend craft |
+| `git/` | 1 | GitHub PR review-and-merge workflow |
 | `product-planning/` | 1 | Product requirements docs |
 | `impact-driven-writing/` | 5 | Writing — AI-ism removal, humanizer, showcase, docs |
 
@@ -110,6 +111,12 @@ distributing those skills.
 | Skill | Source | Purpose |
 |-------|--------|---------|
 | `prd` | [github/awesome-copilot](https://github.com/github/awesome-copilot) | Product Requirements Documents |
+
+### git/
+
+| Skill | Source | Purpose |
+|-------|--------|---------|
+| `github-pr-workflow` | local | Open a PR (source → target), review it with a sub-agent (Pass/Failed), then merge or comment-and-fix. Driven by `gh` via `driver.mjs`. |
 
 ### impact-driven-writing/ — writing skills
 
