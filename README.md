@@ -15,7 +15,7 @@ installed from upstream GitHub repos; each is activated by symlinking it into
 | `golang/` | 8 | Go language development |
 | `unity/` | 1 | Unity DOTS/ECS patterns |
 | `design/` | 2 | UI/UX design principles, accessibility & AI-frontend craft |
-| `git/` | 1 | GitHub PR review-and-merge workflow |
+| `git/` | 2 | GitHub PR review-and-merge workflow, batch commits |
 | `product-planning/` | 1 | Product requirements docs |
 | `impact-driven-writing/` | 5 | Writing — AI-ism removal, humanizer, showcase, docs |
 
@@ -150,6 +150,7 @@ and doc layout the other skills rely on.
 | Skill | Source | Purpose |
 |-------|--------|---------|
 | `github-pr-workflow` | local | Open a PR (source → target), review it with a sub-agent (Pass/Failed), then merge or comment-and-fix. Driven by `gh` via `driver.mjs`. |
+| `git-commit` | [anthropics/skills](https://github.com/anthropics/skills) | Batch-commit changes into logical, Conventional Commits-style commits — `/git-commit all` or `/git-commit current` |
 
 ### impact-driven-writing/ — writing skills
 
