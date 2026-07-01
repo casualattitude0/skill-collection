@@ -1,6 +1,6 @@
 ---
 name: showcase-writer
-description: Turn raw project/role material into sharp self-presentation and work-showcase content — resume bullets, case studies, interview stories, LinkedIn/about blurbs, portfolio hooks. Use when the user is writing about their own work or accomplishments and provides raw material (what they did, the context, the outcome). Gathers missing facts first, then picks the right framework (XYZ, STAR/CAR, BLUF) for the output type and returns 2–3 labeled variations. Triggers on "help me write a resume bullet," "turn this into a case study," "write my LinkedIn about," "draft an interview story," "make this accomplishment sound better."
+description: Turn raw project/role material into sharp self-presentation and work-showcase content — resume bullets, case studies, interview stories, LinkedIn/about blurbs, portfolio hooks. Use when the user is writing about their own work or accomplishments and provides raw material (what they did, the context, the outcome). Gathers missing facts first, then picks the right framework (XYZ, STAR/CAR, BLUF) for the output type and returns 2–3 labeled variations. Handles AI/technical work (framing LLM, agent, RAG, or MCP projects by their outcome, not the tech), leadership-without-authority and mentoring impact, and translating jargon for non-engineer readers. Triggers on "help me write a resume bullet," "turn this into a case study," "write my LinkedIn about," "draft an interview story," "make this accomplishment sound better," "make my AI/leadership work sound impactful."
 allowed-tools:
   - AskUserQuestion
   - Read
@@ -90,6 +90,12 @@ Run every line through all of these:
   push it one level deeper to the outcome.
 - **First person, owned.** "I" or implied-I, not "the team" — unless the point
   is leadership, in which case make *your* leadership the action.
+- **Write for the reader, not your peers.** The first reader is often a recruiter
+  or hiring manager who is *not* an engineer. Translate jargon into outcomes they
+  feel: "cut p99 latency 800ms→120ms" → "made the app feel instant, lifting
+  checkout completion 12%." Keep one idea per sentence; if a line needs a second
+  comma-spliced clause to breathe, split it. Lead with the business result, and
+  park the mechanism in parentheses or a trailing clause for the technical reader.
 
 ## Step 4 — Concision targets
 
@@ -103,6 +109,49 @@ override):
 
 Ask the user for their limit only if they have a known hard constraint (e.g. a
 form's character cap).
+
+## Step 5 — Special angles
+
+Most lines are covered by Steps 2–4. Reach for these when the raw material has a
+particular shape.
+
+### AI / modern-tech work
+
+When the achievement involves AI (LLMs, agents, RAG, MCP, prompt systems), the
+trap is naming the technology and stopping there. The tool is *not* the
+accomplishment — what it changed is. Apply the same impact-first rule.
+
+- ❌ "Built an MCP server that integrates AI into our design workflow."
+  — *names the tech, no outcome; "so what?" unanswered.*
+- ✅ "Built an MCP server that pulls live design specs into the dev workflow,
+  cutting design-to-code handoff from ~2 days to ~2 hours and tripling the design
+  pipeline's throughput."
+  — *the AI plumbing is the method; the time and throughput are the point.*
+
+Anchor AI claims to a baseline the reader trusts: accuracy before→after
+(68%→91%), human effort removed (hours/week, % of tickets auto-resolved), cost
+(per-call or total inference spend), or adoption (teams/users now on it). If the
+AI work is genuinely novel, one clause of "first to do X here" earns its place —
+but only with the outcome attached.
+
+### Leadership without authority & mentoring
+
+Senior roles are judged on impact *through other people*, not just personal
+output. Make the leverage visible and quantify it like any other result.
+
+- **Mentoring:** tie it to a number — "mentored 4 junior engineers; cut their
+  ramp time from ~3 months to ~6 weeks and raised first-PR-merge rate." Not
+  "helped onboard new hires."
+- **Influence without a title:** name what you moved and how, when you had no
+  authority to mandate it — "aligned 3 teams on a shared API contract through an
+  RFC and design reviews, unblocking a launch that had stalled for two quarters."
+- **Force multiplier:** docs, tooling, and standards that scale past you —
+  "wrote the deployment runbook that cut on-call escalations 40% and let the
+  whole team ship without me in the loop."
+
+Keep yourself the subject of the verb (*mentored, aligned, set the standard*),
+but let the result land on the team or org. That is what "leadership" looks like
+on the page.
 
 ## Voice
 
@@ -177,4 +226,7 @@ your checkout, that's the kind of thing I fix."
 - [ ] Numbers present; none invented
 - [ ] Weak verbs and filler adjectives cut
 - [ ] Within the concision target
+- [ ] Readable by a non-engineer: jargon translated, one idea per sentence
+- [ ] Polish pass: no orphan word stranded on its own line, no hanging article or
+      preposition at a line end, parallel verb tenses, no word repeated within ~5 words
 - [ ] 2–3 labeled variations delivered
