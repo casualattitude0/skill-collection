@@ -12,7 +12,7 @@ installed from upstream GitHub repos; each is activated by symlinking it into
 | `flutter/` | 10 | Flutter / Dart app development |
 | `golang/` | 8 | Go language development |
 | `unity/` | 1 | Unity DOTS/ECS patterns |
-| `design/` | 1 | UI/UX design principles & accessibility |
+| `design/` | 2 | UI/UX design principles, accessibility & AI-frontend craft |
 | `product-planning/` | 1 | Product requirements docs |
 | `impact-driven-writing/` | 5 | Writing — AI-ism removal, humanizer, showcase, docs |
 
@@ -103,6 +103,7 @@ distributing those skills.
 | Skill | Source | Purpose |
 |-------|--------|---------|
 | `typeui-fundamentals` | [bergside/typeui](https://github.com/bergside/typeui) | Design-system-agnostic UI/UX principles — hierarchy, 30 UX laws, typography, spacing, WCAG accessibility |
+| `impeccable` | [pbakaus/impeccable](https://github.com/pbakaus/impeccable) | Production-grade frontend design & iteration — 23 `/impeccable` commands (craft, shape, audit, critique, polish, animate…), 44 deterministic AI-slop detector rules, bundled Node tooling |
 
 ### product-planning/
 
