@@ -6,7 +6,9 @@ installed from upstream GitHub repos; each is activated by symlinking it into
 
 | Folder | Skills | Focus |
 |--------|:------:|-------|
-| `testing/` | 7 | TDD, Playwright, pytest, frontend testing |
+| `testing/` | 6 | Playwright, pytest, frontend testing |
+| `engineering/` | 12 | Matt Pocock's engineering workflow — TDD, diagnosis, PRDs, triage, module design |
+| `productivity/` | 5 | Matt Pocock's non-code workflow — grilling, handoff, teaching |
 | `react/` | 1 | React / Next.js performance |
 | `vue/` | 9 | Vue 3 + ecosystem (Pinia, Router, Vite, Vitest, Nuxt) |
 | `flutter/` | 10 | Flutter / Dart app development |
@@ -37,13 +39,44 @@ distributing those skills.
 
 | Skill | Source | Purpose |
 |-------|--------|---------|
-| `tdd` | [mattpocock/skills](https://github.com/mattpocock/skills) | Red-green-refactor TDD, language-agnostic |
 | `playwright-best-practices` | [currents-dev](https://github.com/currents-dev/playwright-best-practices-skill) | Deep Playwright guide — E2E, flaky tests, POM, a11y |
 | `playwright-cli` | [microsoft/playwright-cli](https://github.com/microsoft/playwright-cli) | CLI for agentic browser automation |
 | `webapp-testing` | [anthropics/skills](https://github.com/anthropics/skills) | Playwright web-app testing via Python |
 | `python-testing-patterns` | [wshobson/agents](https://github.com/wshobson/agents) | pytest — fixtures, mocking, TDD |
 | `frontend-testing-best-practices` | [sergiodxa](https://github.com/sergiodxa/agent-skills) | Prefer E2E, minimize mocking |
 | `playwright-generate-test` | [github/awesome-copilot](https://github.com/github/awesome-copilot) | Generate Playwright tests from a live site |
+
+### engineering/ — source: [mattpocock/skills](https://github.com/mattpocock/skills)
+
+Matt Pocock's daily engineering workflow. **Model-invoked** skills fire automatically
+when relevant; **User-invoked** (`/name`) skills are reachable only by you. Run
+`/setup-matt-pocock-skills` once first — it configures the issue tracker, triage labels,
+and doc layout the other skills rely on.
+
+| Skill | Type | Purpose |
+|-------|------|---------|
+| `tdd` | model | Test-driven development — build features / fix bugs test-first, red-green-refactor |
+| `diagnosing-bugs` | model | Diagnosis loop for hard bugs and performance regressions |
+| `codebase-design` | model | Shared vocabulary for designing deep, testable, AI-navigable modules |
+| `domain-modeling` | model | Build and sharpen a project's domain model / ubiquitous language |
+| `prototype` | model | Throwaway prototype to answer a design question (state model, UI shape) |
+| `setup-matt-pocock-skills` | user | One-time setup — issue tracker, triage labels, doc layout |
+| `grill-with-docs` | user | Relentless interview to sharpen a plan, creating ADRs + glossary as you go |
+| `improve-codebase-architecture` | user | Scan for deepening opportunities, HTML report, then grill the one you pick |
+| `to-prd` | user | Turn the conversation into a PRD, publish to the issue tracker |
+| `to-issues` | user | Break a plan/PRD into independently-grabbable tracer-bullet issues |
+| `triage` | user | Move issues + external PRs through a triage state machine into agent-ready briefs |
+| `ask-matt` | user | Router — ask which skill or flow fits your situation |
+
+### productivity/ — source: [mattpocock/skills](https://github.com/mattpocock/skills)
+
+| Skill | Type | Purpose |
+|-------|------|---------|
+| `grilling` | model | Interview you relentlessly to stress-test a plan before building |
+| `grill-me` | user | Relentless interview to sharpen a plan or design |
+| `handoff` | user | Compact the current conversation into a handoff doc for another agent |
+| `teach` | user | Teach you a new skill or concept within the workspace |
+| `writing-great-skills` | user | Reference for writing and editing skills well |
 
 ### react/
 
