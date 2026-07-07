@@ -9,8 +9,11 @@
 //         Push <head> if needed, open a PR, print JSON {number,url,base,head}.
 //   context <pr>
 //         Print review context for the sub-agent: title, body, files, diff.
-//   pass  <pr> [--method squash|merge|rebase] [--no-delete-branch]
-//         Merge the PR (default: squash + delete branch). Closes it on merge.
+//   pass  <pr> [--method merge|squash|rebase] [--no-delete-branch]
+//         Merge the PR (default: merge commit + delete branch). Closes it on
+//         merge. The default `merge` records a "Merge pull request #N from
+//         <head>" commit on the base — the source branch joins back into the
+//         target branch instead of being replayed as a parallel line.
 //   fail  <pr> --reason <text>
 //         Post a review comment with the failure reasons (requests changes).
 //   status <pr>
@@ -105,7 +108,7 @@ switch (cmd) {
   case "pass": {
     const pr = pos[0];
     if (!pr) die("pass requires <pr>");
-    const method = opt.method || "squash";
+    const method = opt.method || "merge";
     const flag = { squash: "--squash", merge: "--merge", rebase: "--rebase" }[method];
     if (!flag) die(`unknown --method ${method}`);
     const args = ["pr", "merge", pr, flag];
@@ -142,7 +145,7 @@ switch (cmd) {
     die(`usage: node driver.mjs <open|context|pass|fail|status> ...
   open    --head <b> --base <b> [--title T] [--body B] [--draft]
   context <pr>
-  pass    <pr> [--method squash|merge|rebase] [--no-delete-branch]
+  pass    <pr> [--method merge|squash|rebase] [--no-delete-branch]
   fail    <pr> --reason <text>
   status  <pr>`);
 }

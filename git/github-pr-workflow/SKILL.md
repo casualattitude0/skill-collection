@@ -13,9 +13,15 @@ Drives a full PR review loop with the `gh` CLI:
 
 1. **Open** a PR: source branch → target branch.
 2. **Review** the PR with a Claude sub-agent → `Pass` / `Failed`.
-3. **Pass** → squash-merge and delete the branch (PR closes on merge).
+3. **Pass** → merge into the target branch (a "Merge pull request #N from
+   <head>" commit) and delete the branch (PR closes on merge).
 4. **Failed** → post a comment with the failure reasons, fix them on the
    source branch, push, and re-review until it passes.
+
+The default merge method is a real **merge commit** so the source branch
+joins back into the target branch. Do **not** default to `squash`/`rebase` —
+those replay the source commits onto the base and leave the graph looking
+like divergent parallel branches instead of a merge back into the target.
 
 The deterministic GitHub plumbing lives in
 [`driver.mjs`](driver.mjs); the Pass/Failed **decision** is made by a
@@ -74,8 +80,11 @@ Parse the first line for `VERDICT: Pass` / `VERDICT: Failed`.
 node driver.mjs pass <pr-number>
 ```
 
-Squash-merges and deletes the source branch (override with
-`--method merge|rebase` or `--no-delete-branch`). Confirm:
+Creates a merge commit on the target branch ("Merge pull request #N from
+`<head>`") and deletes the source branch — the source branch joins back into
+the target instead of running parallel to it. Override with
+`--method squash|rebase` or keep the branch with `--no-delete-branch`.
+Confirm:
 
 ```bash
 node driver.mjs status <pr-number>   # -> {"state":"MERGED","merged":true,...}
@@ -107,7 +116,7 @@ git checkout -   # back to where you were
 |---|---|
 | `open --head <b> --base <b> [--title T] [--body B] [--draft]` | Push head, open PR, print `{number,url,...}` |
 | `context <pr>` | Print title + body + files + diff for the reviewer |
-| `pass <pr> [--method squash\|merge\|rebase] [--no-delete-branch]` | Merge + delete branch |
+| `pass <pr> [--method merge\|squash\|rebase] [--no-delete-branch]` | Merge into target (default: merge commit) + delete branch |
 | `fail <pr> --reason <text>` | Post a "Failed" review comment |
 | `status <pr>` | Print `{state,mergeable,merged,base,head}` |
 
@@ -126,9 +135,14 @@ git checkout -   # back to where you were
   push is a no-op and the PR still opens.
 - **Review the *latest* diff.** After pushing a fix, re-run `context` before
   re-reviewing — `gh pr diff` reflects the new commits immediately.
-- **`pass` is irreversible.** A squash-merge can't be cleanly undone. Only
-  call it after a `Pass` verdict. Test loops should target a throwaway base
-  branch, never `main` directly.
+- **Default method is `merge` (a merge commit), not `squash`.** A merge
+  commit shows the source branch joining back into the target ("Merge pull
+  request #N from `<head>`"). `squash`/`rebase` replay the commits onto the
+  base, which reads as a parallel/divergent branch rather than a merge —
+  only pass `--method squash|rebase` when you explicitly want that.
+- **`pass` is irreversible.** A merge can't be cleanly undone. Only call it
+  after a `Pass` verdict. Test loops should target a throwaway base branch,
+  never `main` directly.
 
 ## Troubleshooting
 
@@ -145,5 +159,6 @@ git checkout -   # back to where you were
 This skill was exercised against a sandbox base branch (not `main`):
 `open` (PR #1, source→base) → `context` → sub-agent returned **Failed** on a
 seeded `a - b` bug → `fail` posted the comment → fix pushed → `context`
-re-fetched → sub-agent returned **Pass** → `pass` squash-merged and deleted
-the branch → `status` reported `MERGED`. Sandbox branches were then deleted.
+re-fetched → sub-agent returned **Pass** → `pass` merged into the base and
+deleted the branch → `status` reported `MERGED`. Sandbox branches were then
+deleted.
