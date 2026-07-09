@@ -192,6 +192,7 @@ Portable planning skills — [agentskills.io](https://agentskills.io) format, mu
 | Skill | Source | Purpose |
 |-------|--------|---------|
 | `github-pr-workflow` | local | Open a PR (source → target), review it with a sub-agent (Pass/Failed), then merge or comment-and-fix. Driven by `gh` via `driver.mjs`. |
+| `ssh-account-doctor` | local | Diagnose & fix SSH authenticating to GitHub as the **wrong account** with multiple keys/accounts — the `Host *` catch-all + agent-key-order trap. Adds `IdentityAgent none` per account block via `driver.mjs` (diagnose/verify/plan/fix). |
 | `git-commit` | [anthropics/skills](https://github.com/anthropics/skills) | Batch-commit changes into logical, Conventional Commits-style commits — `/git-commit all` or `/git-commit current` |
 
 ### impact-driven-writing/ — writing skills
