@@ -14,6 +14,8 @@
 | Treats all project types the same | Shared template is faster | Game/APP/WEB playbooks define different phase signals. Wrong playbook = wrong phase. |
 | Ends at roadmap without slice + handoff | Old skill stopped at stage 5 | Stages 6–7 are required. Roadmap alone is not "done." |
 | Manufactures questions | Feels interactive | Only ASK where evidence is genuinely ambiguous (destination, scope appetite). AUTO everything the disk settles. |
+| Writes pitch-deck artifacts | Default LLM prose | Follow [artifact-voice.md](artifact-voice.md). Cut robust/seamless/leverage/delve. No em dashes in body sentences. Soul and exits must be observable. |
+| Pads handoff with "engaging / immersive / solid foundation" | Sounds complete without saying anything | Replace with timing, counts, or a failure you can watch. |
 
 ## Anti-sycophancy — forbidden postures
 
@@ -56,6 +58,7 @@ All of these live **inside this pack** under `skills/` (or `references/grilling.
 |-----------|----------|
 | Don't know which **game** tool | `skills/triage` |
 | Stress-test plan / destination / slice | [grilling.md](grilling.md) |
+| Artifacts sound like AI / pitch deck | [artifact-voice.md](artifact-voice.md) or `skills/avoid-ai-writing` |
 | Single feature requirements doc | `skills/prd` |
 | Throwaway logic/UI experiment | `skills/prototype` |
 | Domain glossary / ADRs | `skills/domain-modeling` |

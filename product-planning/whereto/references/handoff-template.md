@@ -2,7 +2,9 @@
 
 Use this for Stage 7 output. Write to `IMPLEMENTATION_HANDOFF.md` at project root (or `docs/IMPLEMENTATION_HANDOFF.md` if `docs/` exists). Every section required unless marked optional.
 
-**Hard rule:** Describe what the user/player must experience. No code, no file edit instructions, no implementation steps.
+**Hard rules:**
+- Describe what the user/player must experience. No code, no file edit instructions, no implementation steps.
+- Prose follows [artifact-voice.md](artifact-voice.md). Concrete. Observable. No pitch-deck adjectives.
 
 ```markdown
 # Implementation Handoff: [Slice Name]
@@ -103,3 +105,4 @@ What this build produces in one sentence:
 | "Standard" behavior | Specify exactly — loading time, error copy, empty state |
 | Code snippets | Remove — handoff is intent, not implementation |
 | No "soul" line | One sentence: what makes this slice itself, not generic |
+| Pitch-deck prose ("seamless", "engaging", "solid foundation") | Rewrite per [artifact-voice.md](artifact-voice.md) |

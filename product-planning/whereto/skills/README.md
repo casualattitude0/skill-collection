@@ -34,8 +34,11 @@ Then read that skill's local refs (`references/`, sibling `.md` files) as instru
 | `tdd` | Build or fix test-first (red-green-refactor) |
 | `diagnosing-bugs` | Hard bugs / perf — feedback-loop diagnosis |
 | `typeui-fundamentals` | UI/UX/a11y principles for APP/WEB surfaces |
+| `avoid-ai-writing` | Full audit/rewrite when artifacts still sound machine-written |
 
-Also: [references/grilling.md](../references/grilling.md) — stress-test a plan one question at a time (Stage 4).
+Also: [references/grilling.md](../references/grilling.md) — stress-test a plan one question at a time (Stage 4).  
+Also: [references/artifact-voice.md](../references/artifact-voice.md) — how `PROJECT_PHASE.md` / handoff prose must sound.  
+Full rewrite pass: `skills/avoid-ai-writing`.
 
 ### Design (Game — Layer A)
 | Skill | Use when |

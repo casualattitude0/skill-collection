@@ -96,28 +96,30 @@ Rejected:
 
 ## Output template (append to PROJECT_PHASE.md under `## Next Slice`)
 
+Write in [artifact-voice.md](artifact-voice.md) register. Hypothesis and failure lines must be falsifiable, not motivational.
+
 ```markdown
 ## Next Slice
 
 **Recommended:** [slice name]  
 **Score:** [X/10]  
-**Hypothesis:** [If we build X, we validate Y. Failure means Z.]
+**Hypothesis:** [If we build X, we learn Y. If it fails, we learn Z.]
 
 ### What to build
 - [item]
 - [item]
 
 ### What to fake (placeholder OK)
-- [item — what it looks like]
+- [item: what it looks like]
 
 ### What must be real (do NOT fake)
-- [item — why faking kills the signal]
+- [item: why faking kills the signal]
 
 ### Success criteria
 - [observable pass]
 
 ### Failure looks like
-- [observable fail — what you learn if it fails]
+- [observable fail: what you learn]
 
 ### Build time estimate
 [~N days/weeks]
@@ -126,6 +128,6 @@ Rejected:
 - [list or "none"]
 
 ### Rejected alternatives
-- **[Candidate B]:** [why not]
-- **[Candidate C]:** [why not]
+- **[Candidate B]:** [specific weakness]
+- **[Candidate C]:** [specific weakness]
 ```

@@ -1,23 +1,23 @@
 # Whereto — Worked Examples
 
-Three abbreviated chains matching common project situations. Full artifacts would be longer; these show the decision logic and structure.
+Three short chains. They show decision logic and the voice final artifacts should use: facts, counts, a call. Not pitch language.
 
 ---
 
 ## Example 1: Game — Late Prototype (Godot roguelite)
 
-**Signals found:** 1 grey-box level, 1 enemy, save stubbed, GDD promises 12 levels / 20 enemies / 15 upgrades, git active (~monthly commits).
+**Signals:** 1 grey-box level, 1 enemy, save stubbed. GDD wants 12 levels / 20 enemies / 15 upgrades. Git ~monthly.
 
 **Phase scorecard:**
 ```
 Stated: beta (README) · Evidence: late prototype / pre-vertical-slice · Confidence: High
-Blockers: save stubbed, 1/12 levels, scope gap vs GDD
+Blockers: save stubbed, 1/12 levels, GDD scope gap
 Momentum: cruising
-Destination pinned: commercial launch (user confirmed)
+Destination: commercial launch (user confirmed)
 ```
 
-**Roadmap (abbreviated):**
-- Phase 1 — Vertical Slice: one level start-to-finish, real save on exit
+**Roadmap (short):**
+- Phase 1 — Vertical slice: one level start to finish, real save on exit
 - Phase 2 — Systems shell: settings, full menu flow
 - Phase 3 — Production template: repeatable level pipeline
 
@@ -29,32 +29,32 @@ Destination pinned: commercial launch (user confirmed)
 | B: Save system only | 1 | 2 | 1 | 2 | 2 | 8 |
 | C: Build all 12 levels | 0 | 0 | 1 | 0 | 0 | 1 |
 
-**Recommended:** A — tests core loop + stack integration; save is part of slice, not standalone.
+**Recommended:** A. Proves the loop and the stack together. Save rides along; it is not the experiment.
 
 **Handoff build target:**
-> One Godot level playable start-to-finish with combat, death, restart, and save on exit.
+> One Godot level playable start to finish with combat, death, restart, and save on exit.
 
-**MUST scope:** core loop in one scene, save/load one slot, death → restart  
-**PLACEHOLDER OK:** art (grey-box), audio (beeps), UI chrome  
-**MUST BE REAL:** input responsiveness, hit feedback, save actually persists
+**MUST:** core loop in one scene, one save slot, death → restart  
+**PLACEHOLDER OK:** grey-box art, beep audio, UI chrome  
+**MUST BE REAL:** input latency, hit feedback, save that survives reopen
 
 ---
 
 ## Example 2: APP — MVP → Alpha (Flutter habit tracker)
 
-**Signals found:** Real API auth happy path, local persistence works, no crash reporting, error/empty/offline states missing, one smoke test, git steady.
+**Signals:** Real API auth on happy path. Local persistence works. No crash reporting. Error / empty / offline missing. One smoke test. Git steady.
 
 **Phase scorecard:**
 ```
-Stated: MVP (README) · Evidence: MVP transitioning to alpha · Confidence: High
-Blockers: no observability, thin robustness states, thin tests
+Stated: MVP (README) · Evidence: MVP moving into alpha · Confidence: High
+Blockers: no crash reporting, thin robustness states, thin tests
 Momentum: cruising
-Destination pinned: public store launch
+Destination: public store launch
 ```
 
-**Roadmap (abbreviated):**
-- Phase 1 — Alpha hardening: robustness states on core flow
-- Phase 2 — Beta: crash reporting, TestFlight/internal track
+**Roadmap (short):**
+- Phase 1 — Alpha hardening: error / empty / offline on core flow
+- Phase 2 — Beta: crash reporting, TestFlight / internal track
 - Phase 3 — Launch: store metadata, signing, release CI
 
 **Next slice candidates:**
@@ -65,31 +65,31 @@ Destination pinned: public store launch
 | B: Crash reporting only | 1 | 2 | 1 | 2 | 2 | 8 |
 | C: Full test suite | 1 | 1 | 1 | 1 | 1 | 5 |
 
-**Recommended:** A — core flow works; real users will hit network/empty failures first.
+**Recommended:** A. Happy path already works. Real users hit network and empty states first.
 
 **Handoff build target:**
-> Primary habit-logging flow handles loading, empty, error, and offline without crashing or blank screens.
+> Primary habit-logging flow shows loading, empty, error, and offline without crash or blank screen.
 
-**MUST scope:** loading skeleton, empty state copy + CTA, API error retry, offline queue or message  
+**MUST:** loading skeleton, empty copy + CTA, API error retry, offline queue or message  
 **OUT OF SCOPE:** new features, analytics, store assets
 
 ---
 
 ## Example 3: WEB — Overclaimed Beta (Next.js marketing site)
 
-**Signals found:** README says "basically ready to ship", lorem pricing + about page, no vercel.json/netlify/CI, no sitemap/robots/meta, nav not responsive.
+**Signals:** README says "basically ready to ship." Lorem on pricing and about. No vercel.json / netlify / CI. No sitemap / robots / meta. Nav not responsive.
 
 **Phase scorecard:**
 ```
 Stated: launch-ready (README) · Evidence: alpha/beta gap · Confidence: High
-Blockers: placeholder content, no deploy pipeline, no SEO, non-responsive nav
+Blockers: placeholder copy, no deploy, no SEO, non-responsive nav
 Momentum: cruising
-Destination pinned: public marketing launch
+Destination: public marketing launch
 ```
 
-**Roadmap (abbreviated):**
-- Phase 1 — Launch gap close: real content + deploy + SEO basics
-- Phase 2 — Beta hardening: responsive + a11y pass
+**Roadmap (short):**
+- Phase 1 — Launch gap: real content + deploy + SEO basics
+- Phase 2 — Hardening: responsive + a11y
 - Phase 3 — Launch: prod domain + monitoring
 
 **Next slice candidates:**
@@ -100,11 +100,11 @@ Destination pinned: public marketing launch
 | B: Responsive pass only | 1 | 2 | 1 | 2 | 2 | 8 |
 | C: Full redesign | 0 | 0 | 0 | 1 | 0 | 1 |
 
-**Recommended:** A — can't validate launch without real content on a real URL with crawlable meta.
+**Recommended:** A. You cannot call it launch until real copy sits on a real URL with crawlable meta.
 
 **Handoff build target:**
-> Marketing site deployed to staging with real pricing/about copy, meta/OG tags, sitemap, robots.txt, and mobile nav.
+> Staging deploy with real pricing/about copy, meta/OG tags, sitemap, robots.txt, and mobile nav under 768px.
 
-**MUST scope:** replace lorem on pricing + about, vercel.json or netlify.toml, sitemap + robots, title/description/OG per page, hamburger nav <768px  
-**PLACEHOLDER OK:** hero image stock photo, blog section omitted  
-**OUT OF SCOPE:** CMS, A/B testing, analytics (next slice)
+**MUST:** replace lorem on pricing + about, deploy config, sitemap + robots, title/description/OG per page, hamburger nav  
+**PLACEHOLDER OK:** stock hero image, blog section skipped  
+**OUT OF SCOPE:** CMS, A/B tests, analytics (later slice)
