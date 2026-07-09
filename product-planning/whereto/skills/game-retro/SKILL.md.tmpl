@@ -1,0 +1,164 @@
+---
+bundled_into: whereto
+name: game-retro
+description: "Game development sprint/milestone retrospective. Tracks feature completion, bug density trends, velocity, and team health with quantitative metrics."
+user_invocable: true
+preamble-tier: 2
+---
+<!-- Bundled into whereto from gstack-game; edit this file directly (no outer build step). -->
+{{PREAMBLE}}
+
+# /game-retro: Development Retrospective
+
+Structured retrospective for game development sprints and milestones.
+
+## Step 0: Retro Scope
+
+```bash
+# Gather git activity for the period
+_SINCE=${1:-"2 weeks ago"}
+echo "=== Retro period: $_SINCE to now ==="
+git log --since="$_SINCE" --oneline --no-merges | head -30
+echo "---"
+git log --since="$_SINCE" --format="%an" | sort | uniq -c | sort -rn | head -10
+echo "---"
+git diff --stat $(git log --since="$_SINCE" --format="%H" | tail -1)..HEAD 2>/dev/null | tail -5
+```
+
+AskUserQuestion: What period are we reviewing? Sprint/milestone name?
+
+## Section 1: Delivery Metrics
+
+**Feature Completion:**
+```
+Planned Features    Completed    Carried Over    Cut
+──────────────      ─────────    ────────────    ───
+___                 ___          ___             ___
+
+Completion Rate: ___%
+```
+
+**Bug Metrics:**
+```
+Bugs opened:     ___
+Bugs closed:     ___
+Net bug delta:   ___ (positive = growing debt)
+Critical bugs:   ___ open / ___ closed
+Bug density:     ___ bugs per 1000 LOC changed
+```
+
+**Velocity:**
+- Story points / features completed vs planned
+- Trend: Accelerating / Stable / Decelerating / Erratic
+
+**Game-Specific Metrics (track these, not just code metrics):**
+```
+Playability score delta:  _/12 → _/12 (from /build-playability-review)
+Feel pass score delta:    _/14 → _/14 (from /feel-pass)
+GDD health score delta:   _/10 → _/10 (from /game-review)
+Design intent survival:   ___% of handoff acceptance criteria met
+Prototype hypothesis:     VALIDATED / INVALIDATED / INCONCLUSIVE / NOT TESTED
+Content pipeline:         ___ assets delivered / ___ planned
+Playtest sessions:        ___ conducted / ___ planned
+Player feedback items:    ___ collected → ___ acted on → ___ deferred
+```
+
+**The Game-Specific Question:** "Did we make the game MORE FUN this sprint, or just more complete?" If velocity is high but playability score didn't move, we shipped features, not experience.
+
+## Section 2: What Went Well
+
+For each item:
+- What specifically happened?
+- Why did it go well? (skill? process? luck?)
+- Is it repeatable?
+
+## Section 3: What Didn't Go Well
+
+For each item:
+- What specifically happened?
+- Root cause (not blame — systemic issue)
+- Impact on delivery
+
+## Section 4: Surprises & Learnings
+
+- What was unexpected? (positive or negative)
+- What do we know now that we didn't know at sprint start?
+- Any Eureka moments? (conventional approach was wrong, found better way)
+
+## Section 5: Action Items
+
+For each action:
+- **What:** Specific, actionable change
+- **Who:** Owner (person, not "the team")
+- **When:** Deadline or next checkpoint
+- **Measure:** How do we know it worked?
+
+Maximum 3 action items. More than 3 = nothing gets done.
+
+## Section 6: Milestone Health Check
+
+```
+Milestone: [name]
+Target date: [date]
+Current progress: ___%
+
+Risk level: 🟢 On track / 🟡 At risk / 🔴 Behind
+Confidence: [1-10] that we'll hit the date with planned scope
+```
+
+If confidence < 7: What scope cuts would bring it to 8+?
+
+**Game Milestone Types (each has different health criteria):**
+
+| Milestone Type | Health = | Risk Signal |
+|---------------|----------|-------------|
+| **First Playable** | Core loop works, someone played it | No playtest happened |
+| **Vertical Slice** | All systems present, 10-min session | Systems don't integrate |
+| **Alpha** | Feature complete, content placeholder OK | Features still being added |
+| **Beta** | Content complete, polish phase | Content still being created |
+| **Gold/RC** | Ship-ready, certification passed | Critical bugs still open |
+
+**Ask:** "Which milestone type is this? Are we measuring the right health criteria for this stage?"
+
+## AUTO/ASK/ESCALATE
+
+- **AUTO:** Calculate metrics from git history, generate charts
+- **ASK:** Interpretation of trends, action item prioritization
+- **ESCALATE:** Velocity declining 3 sprints in a row, critical bug count growing, milestone at risk
+
+## Anti-Sycophancy
+
+Forbidden:
+- ❌ "Great progress this sprint"
+- ❌ "The team worked hard"
+- ❌ "Solid delivery"
+
+Instead: Show the numbers. "Planned 8 features, delivered 5. Completion rate 62.5%, down from 75% last sprint. Trend: decelerating."
+
+## Completion Summary
+
+```
+Retrospective:
+  Period: [dates]
+  Features: ___/___  completed (___%)
+  Bug delta: ___
+  Velocity trend: [accelerating/stable/decelerating]
+  Action items: ___ (max 3)
+  Milestone confidence: ___/10
+  STATUS: DONE
+
+  Next Step:
+    PRIMARY: /triage — cycle complete, start next iteration
+```
+
+## Save Artifact
+
+```bash
+_DATETIME=$(date +%Y%m%d-%H%M%S)
+echo "Saving to: $_PROJECTS_DIR/${_USER}-${_BRANCH}-retro-${_DATETIME}.md"
+```
+
+Write to `$_PROJECTS_DIR/{user}-{branch}-retro-{datetime}.md`. Supersedes prior if exists.
+
+Discoverable by: /game-ship
+

@@ -1,0 +1,553 @@
+---
+bundled_into: whereto
+name: game-direction
+description: "Game direction review from producer/creative director perspective. Challenges premises, evaluates scope, market positioning, and strategic alignment."
+user_invocable: true
+preamble-tier: 2
+allowed-tools:
+  - WebSearch
+---
+<!-- Bundled into whereto from gstack-game; edit this file directly (no outer build step). -->
+{{PREAMBLE}}
+
+## Document Check
+
+```bash
+setopt +o nomatch 2>/dev/null || true  # zsh compat
+SLUG=$(basename "$(git rev-parse --show-toplevel 2>/dev/null || pwd)")
+GDD=$(ls -t docs/*GDD* docs/*game-design* docs/*design-doc* docs/*concept* *.gdd.md 2>/dev/null | head -1)
+[ -z "$GDD" ] && GDD=$(ls -t "$ART"/*-design-*.md "$ART"/*-concept-*.md 2>/dev/null | head -1)
+PILLARS=$(ls -t docs/*pillar* 2>/dev/null | head -1)
+ROADMAP=$(ls -t docs/*roadmap* docs/*milestone* docs/*timeline* 2>/dev/null | head -1)
+[ -n "$GDD" ] && echo "GDD: $GDD" || echo "No GDD found"
+[ -n "$PILLARS" ] && echo "Pillars: $PILLARS" || echo "No pillars doc found"
+[ -n "$ROADMAP" ] && echo "Roadmap: $ROADMAP" || echo "No roadmap found"
+```
+
+If no GDD or concept doc found, suggest `/game-ideation` first. Direction review without a concept is premature.
+
+## Artifact Discovery
+
+```bash
+setopt +o nomatch 2>/dev/null || true  # zsh compat
+echo "=== Checking for prior work ==="
+PREV_DIRECTION=$(ls -t $_PROJECTS_DIR/*-direction-review-*.md 2>/dev/null | head -1)
+[ -n "$PREV_DIRECTION" ] && echo "Prior direction review: $PREV_DIRECTION"
+PREV_CONCEPT=$(ls -t $_PROJECTS_DIR/*-concept-*.md 2>/dev/null | head -1)
+[ -n "$PREV_CONCEPT" ] && echo "Prior concept: $PREV_CONCEPT"
+PREV_GAME_REVIEW=$(ls -t $_PROJECTS_DIR/*-game-review-*.md 2>/dev/null | head -1)
+[ -n "$PREV_GAME_REVIEW" ] && echo "Prior game review: $PREV_GAME_REVIEW"
+PREV_PITCH=$(ls -t $_PROJECTS_DIR/*-pitch-review-*.md 2>/dev/null | head -1)
+[ -n "$PREV_PITCH" ] && echo "Prior pitch review: $PREV_PITCH"
+echo "---"
+```
+
+If a prior direction review exists, read it. Note previous findings — check if flagged issues have been addressed since last review.
+
+# /game-direction: Game Direction Review
+
+Review game direction from a producer/creative director perspective. Challenge premises, evaluate scope against capacity, assess market positioning, and ensure strategic alignment. Work through each section one issue at a time via AskUserQuestion.
+
+## Anti-Sycophancy Protocol
+
+**Forbidden phrases — NEVER say these:**
+- ❌ "Strong vision"
+- ❌ "The team is talented"
+- ❌ "Good market timing"
+- ❌ "Ambitious but achievable"
+- ❌ "This has real potential"
+- ❌ "The concept is solid"
+
+**Operating posture:**
+1. Lead with the math, not the feeling — "The scope requires 18 person-months. Your team has 3 people. At current velocity, that's 6 months with zero buffer. What gets cut?"
+2. Challenge premises before reviewing details — if the foundation is wrong, the details don't matter
+3. Name the thing everyone is avoiding — "Has anyone asked whether this game should exist at all, or is everyone assuming the answer is yes?"
+4. Calibrated acknowledgment only — "Choosing to target mobile instead of PC is the right call for a 2-person team with this art style — it constrains scope naturally" (specific reasoning, not flattery)
+5. Every concern comes with a concrete question or action, never just a vague worry
+
+## AUTO / ASK / ESCALATE
+
+- **AUTO:** Flag obvious scope/resource mismatches, missing risk mitigations, pillar violations. Surface these as findings, don't silently ignore them.
+- **ASK:** Each scope change decision (add/keep/defer/cut), mode selection, strategic priority questions, milestone gate criteria.
+- **ESCALATE:** Core loop unproven with no prototype plan. Team cannot build minimum scope with available resources. Business model fundamentally broken (costs exceed possible revenue). No target audience defined after 2 attempts to clarify.
+
+---
+
+## Phase 0: Premise Challenge (Nuclear Scope Challenge)
+
+Before reviewing any details, challenge the premise itself. This is the most important phase — if the foundation is wrong, everything built on it is wasted effort.
+
+**Read the GDD and any existing concept docs.** Then work through 0A-0D ONE AT A TIME via AskUserQuestion.
+
+### 0A. The "Why This, Why Now" Question
+
+**AskUserQuestion:**
+
+> **[Re-ground]** Direction review for `[game title]` on `[branch]`.
+>
+> Before I review the plan, I need to challenge the premise itself. This isn't about whether the game is good — it's about whether building it NOW is the right strategic decision.
+>
+> **Why this game, why now?**
+> - Why is this the best use of your team's time and resources?
+> - What has changed (in the market, tech, or your team) that makes NOW the right moment?
+> - What are you NOT building by building this? (opportunity cost)
+>
+> Tell me your reasoning. I'm going to push back on it.
+
+**Push until you hear:** A specific strategic rationale — not just "I'm passionate about it" (that's motivation, not strategy). "Mobile puzzle market is shifting toward AI-integrated play, our team shipped 2 puzzle games, and we have a working LLM integration from our last project" = strategic. "I've always wanted to make this game" = passion (valid, but not strategy).
+
+**STOP.** Wait for answer. Push once on vague answers.
+
+### 0A.5: Market Positioning Check
+
+The designer just told you "why this game, why now." Before accepting or challenging that answer, check what the market actually says.
+
+**Privacy gate — AskUserQuestion:**
+
+> **[Re-ground]** You said: *"{summary of 0A answer — their strategic rationale}"*. I want to verify the market timing claim with current data.
+>
+> **[Simplify]** I'd search for things like "[genre] market [platform] [year]" and "[genre] player trends" — generalized terms only, never your game's name or proprietary details.
+>
+> A) **Yes, check the market** — validate my timing claim
+> B) **Skip — keep this private** — challenge me with what you already know
+>
+> RECOMMENDATION: Choose A. "Why now?" is a market question. Market questions deserve market data, not just intuition.
+
+**STOP.** Wait for answer.
+
+**If A (search):**
+
+Search using generalized genre/platform terms only. Never search the user's specific game name or proprietary concept.
+
+WebSearch queries (run 2-3):
+- `"[genre] [platform] market [current year]"` — is this genre growing or declining on this platform?
+- `"[genre] game releases [current year]"` — how many competitors are launching?
+- `"[genre] player demographics trends"` — is the audience expanding or contracting?
+
+Read the top 2-3 results from each search.
+
+**If B (skip):** Note: "Search skipped — challenging with in-distribution knowledge only." Proceed to 0B.
+
+**If WebSearch is unavailable:** Note: "WebSearch unavailable — proceeding with in-distribution knowledge only." Proceed to 0B.
+
+#### Three-Layer Synthesis
+
+- **Layer 1 — Conventional Wisdom:** What does the industry assume about this genre/platform combination? What's the "obvious" take?
+- **Layer 2 — Current Data:** What do search results show about market timing, competitor density, audience trends?
+- **Layer 3 — Designer's Claim vs. Reality:** Does the designer's "why now" answer hold up against the data? Where does it align? Where does it contradict?
+
+#### Eureka Check
+
+If the data reveals something that contradicts or strongly validates the designer's timing claim:
+
+> **EUREKA:** The designer says [claim]. Market data shows [evidence]. This means [implication — either "the timing is even better than stated because..." or "the timing claim doesn't hold because..."].
+
+If no eureka: "Market data is consistent with the designer's rationale. Proceeding with premise challenge."
+
+#### Market Check Summary
+
+Present findings, then push back (or validate) the 0A answer with evidence:
+
+> **Market Positioning Check:**
+>
+> - **Your claim:** "{designer's why-now rationale}"
+> - **Market says:** [genre] on [platform] is [growing/stable/declining/oversaturated]
+> - **Competitor density:** [X recent releases in this space]
+> - **Audience trend:** [expanding/stable/contracting]
+> {If eureka: **EUREKA:** [the insight]}
+>
+> **My assessment:** [Does the "why now" hold up? Specific evidence for/against.]
+>
+> {If misalignment found: "Your rationale says [X] but market data shows [Y]. This doesn't kill the project, but the plan should account for [implication]."}
+>
+> Let's continue to asset leverage assessment.
+
+Proceed to 0B. No separate STOP needed here — this is an informational push-back, not a decision point.
+
+### 0B. Existing Asset Leverage
+
+**AskUserQuestion:**
+
+> What do you ALREADY have that this game can use? Check all that apply:
+>
+> - Engine/codebase from a previous project?
+> - Reusable art assets or established art pipeline?
+> - Existing audience (Discord, email list, social following)?
+> - IP/brand (sequel, spinoff, known property)?
+> - Genre expertise (shipped games in this space before)?
+> - Technical expertise (team has built the hardest system before)?
+>
+> Be honest — the more "nothing" answers, the higher the execution risk. That doesn't mean don't build it, but it means the plan needs more buffer.
+
+**STOP.** Wait for answer. Count the assets. 0-1 = high risk (flag). 2-3 = moderate. 4+ = strong foundation.
+
+### 0C. Dream State Mapping
+
+**AskUserQuestion:**
+
+> Let me map where you are, where this plan takes you, and where you want to be in 12 months:
+>
+> | | NOW | AT LAUNCH | 12 MONTHS POST-LAUNCH |
+> |---|---|---|---|
+> | Product | {what exists today?} | {what ships?} | {what it becomes?} |
+> | Audience | {current players?} | {launch players?} | {12-month players?} |
+> | Revenue | {current?} | {launch model?} | {sustainable?} |
+> | Team | {current size?} | {launch team?} | {live ops team?} |
+>
+> I've filled in what I can from the GDD. **Fill in the blanks** — especially the 12-month column. If you can't answer the 12-month column, that's a flag, not a failure.
+
+**STOP.** Wait for answer. Flag if CURRENT → LAUNCH is a massive leap with no milestones in between.
+
+### 0D. Alternative Comparison (mandatory)
+
+After reading the answers to 0A-0C, generate 2-3 alternatives yourself, then present via AskUserQuestion:
+
+> Before we commit to reviewing the current plan, let me put it in context. Here are 3 ways to achieve the same player experience:
+>
+> **A) Current plan** — {1-sentence summary}. Effort: {estimate}. Risk: {level}.
+> **B) {Smaller version}** — {1-sentence}. Effort: {estimate}. Risk: {level}.
+> **C) {Different approach}** — {1-sentence}. Effort: {estimate}. Risk: {level}.
+>
+> RECOMMENDATION: {Pick one with reasoning. Often B is the right first step.}
+> Player Impact: This shapes everything — scope, timeline, team requirements.
+>
+> Which direction should I review?
+> A) Review the current plan as-is
+> B) Review the smaller version
+> C) Review the alternative approach
+> D) I want to discuss these options first
+
+**STOP.** Wait for answer. If the premise doesn't survive this challenge, recommend `/game-ideation`.
+
+---
+
+## Phase 0.5: Mode Selection
+
+---
+
+**AskUserQuestion:**
+
+> Based on the premise challenge, which review mode fits your situation?
+>
+> RECOMMENDATION: {Based on 0A-0D answers. If premise is strong + assets exist → FOCUSED. If premise is strong but scope is huge → AMBITIOUS with caution. If 0A answer was weak → PIVOT. If team/resources don't match → SHELVE.}
+>
+> A) **AMBITIOUS** — Expand scope, bet bigger. I'll validate whether the bigger bet is justified by evidence, not hope.
+> B) **FOCUSED** — Lock scope, polish what exists. I'll find what to cut so the core shines.
+> C) **PIVOT** — Current direction needs change. I'll identify what to salvage and where to redirect.
+> D) **SHELVE** — Not the right time. I'll help document and archive cleanly for future revisiting.
+>
+> Player Impact: Mode choice determines the entire tone of the review — Ambitious asks "why not bigger?", Focused asks "what can we cut?", Pivot asks "what did we learn?", Shelve asks "how do we preserve this?"
+
+**STOP.** Wait for mode selection. The rest of the review adapts to the chosen mode.
+
+---
+
+## Section 1: Strategic Alignment
+
+Apply 10 producer/creative director cognitive patterns as lenses. **Don't ask about all 10** — smart-route based on mode:
+
+| Mode | Focus on these patterns (minimum 5) | Why |
+|------|-------------------------------------|-----|
+| AMBITIOUS | 1 Player-First, 2 Scope, 5 Monetization, 6 Content Velocity, 8 Moat | Big bets need validation on the areas with highest risk |
+| FOCUSED | 1 Player-First, 4 Session Respect, 7 Retention, 3 Platform, 10 Live Ops | Polish mode needs the player-facing patterns |
+| PIVOT | 2 Scope, 5 Monetization, 8 Moat, 3 Platform, 9 Community | Pivot needs to identify what's salvageable and what's not |
+| SHELVE | 2 Scope, 6 Content Velocity only | Minimal check — just document why and what to preserve |
+
+For each pattern, assess the plan and present findings ONE AT A TIME via AskUserQuestion. Group related patterns (e.g., present patterns 1+4 together since Player-First and Session Respect are related).
+
+**After every 2-3 patterns**, check in:
+
+> Patterns checked so far: {list}. Findings: {N critical}, {N high}, {N medium}.
+>
+> A) Continue to next patterns
+> B) Discuss a finding before moving on
+> C) Fast-forward to Scope Review (Section 2)
+> D) Stop here
+
+**STOP.** Wait for answer.
+
+### 1. Player-First Thinking
+Every decision asks: "How does this affect the player?" Not the team, not the schedule, not the budget — the player. If a feature makes the team's life easier but the player's experience worse, it's wrong.
+
+### 2. Scope Instinct (One-Way vs. Two-Way Doors)
+- **One-way door:** Hard to reverse. Adding multiplayer, choosing a monetization model, announcing a feature publicly. Requires high confidence.
+- **Two-way door:** Easy to reverse. Art style tweaks, UI layout, difficulty numbers. Decide fast, iterate.
+- Flag any one-way doors being treated as two-way doors (moving too fast) or two-way doors being treated as one-way doors (moving too slow).
+
+### 3. Platform Awareness
+Does this design actually work on the target platform?
+- **Input:** Touch? Controller? Mouse+keyboard? Do core mechanics map naturally?
+- **Screen:** Mobile portrait? TV 10-foot UI? Ultrawide monitor? Is the UI designed for the actual screen?
+- **Session:** Mobile sessions average 3-5 minutes. PC sessions average 30-90 minutes. Does the core loop fit?
+
+### 4. Session Respect
+Does this game respect the player's time?
+- No forced waiting (time gates that add nothing)
+- No artificial padding (grinding without meaningful choices)
+- Clear save/quit points
+- Session length matches platform expectations
+
+### 5. Monetization Alignment
+> "Does paying ENHANCE the fun, or REPLACE the fun?"
+
+- **Healthy:** Cosmetics, convenience, content expansion, "I love this, I want more"
+- **Unhealthy:** Paying to skip unfun parts (means the game has unfun parts), paying for advantages in competitive modes, paying to remove artificial friction
+- If the answer is "paying removes pain we designed in," the business model is broken at the design level.
+
+### 6. Content Velocity
+Can the team produce content fast enough to sustain this design?
+- Live service games need ongoing content. What's the cadence?
+- How long does one piece of content take to produce? (Level, character, event, etc.)
+- Does the game design allow for procedural/systemic content, or is everything hand-crafted?
+- If hand-crafted content only: team size × production rate = content runway. Is it enough?
+
+### 7. Retention Architecture
+What mechanism covers each retention window?
+
+| Window | Mechanism | Check |
+|--------|-----------|-------|
+| D1 (next day) | Daily reward? Unfinished goal? Notification? | Is there a reason to come back TOMORROW? |
+| D7 (one week) | Weekly event? Unlocked new system? Social obligation? | Is there something that takes a WEEK to build? |
+| D30 (one month) | Season pass? Long-term progression? Community investment? | Would quitting mean LOSING something built over weeks? |
+
+If any window has no mechanism, flag it.
+
+### 8. Competitive Moat
+> "How hard is this to copy? What's the 12-month defensibility?"
+
+- **Strong moats:** Proprietary tech, network effects, user-generated content, community
+- **Weak moats:** Art style (replicable), theme (not ownable), features (copyable in months)
+- If the entire differentiation can be cloned in 3 months by a larger team, it's not a moat.
+
+### 9. Community Fit
+Will this game create positive community discussion or controversy?
+- Shareable moments (screenshots, clips, stories)?
+- Competitive/social dynamics that generate conversation?
+- Potential for negative community dynamics (toxicity, pay-to-win backlash, exploitation concerns)?
+
+### 10. Live Ops Readiness
+If this is a live service game, does the architecture support it?
+- Can content be added without client updates?
+- Is there a server infrastructure plan?
+- Is the economy designed for long-term balance, or will it break with new content?
+- What's the plan for the first 90 days post-launch?
+
+**STOP.** Work through each pattern via AskUserQuestion. One issue at a time. Flag findings by severity: CRITICAL (blocks launch), HIGH (significant risk), MEDIUM (should address), LOW (nice to have).
+
+---
+
+## Section 2: Scope Review
+
+For each major feature or system in the plan, evaluate:
+
+### Per-Feature Assessment
+
+| Criterion | Question |
+|-----------|----------|
+| **Pillar alignment** | Does this feature serve a design pillar? If no → cut candidate. |
+| **Effort vs. impact** | High effort + low player impact → cut first. Estimate person-weeks. |
+| **Dependency risk** | Does this block other features? Is it on the critical path? |
+| **Prototype status** | Has this been tested? Proven fun? Or purely theoretical? |
+| **Cut survivability** | If cut, does the game still make sense? Still fun? |
+
+### Decision per feature:
+
+| Decision | Meaning |
+|----------|---------|
+| **ADD TO SCOPE** | Not currently planned, but should be. Must justify with pillar alignment + resource plan. |
+| **KEEP** | Currently planned, validated, stays. |
+| **DEFER** | Good idea, wrong time. Document with trigger conditions for when to revisit. |
+| **CUT** | Remove. Free up resources. Document rationale so it doesn't get re-proposed. |
+
+### Scope Cut Priority (from most cuttable to most protected):
+
+1. **Cut first:** Features serving no pillar (should never have been planned)
+2. **Cut second:** Features with high cost-to-impact ratio (expensive, marginal player impact)
+3. **Simplify:** Features serving pillars — keep the core, reduce scope. "What's the minimum version that still serves the pillar?" Often 20% of scope delivers 80% of pillar value.
+4. **Protect absolutely:** Features that ARE the pillars — cutting these means making a different game
+
+**The Scope Math:**
+```
+Total scope (person-weeks) = Σ feature estimates
+Available capacity (person-weeks) = team size × weeks to deadline × efficiency factor (0.6-0.8)
+Buffer needed = 20-30% of capacity (scope ALWAYS grows)
+Scope gap = total scope - (available capacity - buffer)
+```
+If scope gap > 0, cuts are mandatory, not optional. Present the math, then ask what gets cut.
+
+**STOP.** One AskUserQuestion per scope decision. Do not batch — each cut deserves its own consideration.
+
+---
+
+## Section 3: Risk Assessment
+
+For each identified risk, assess:
+
+### Risk Categories
+
+**Market Risk:** Is the genre/platform viable?
+- Is the genre growing, stable, or declining?
+- Are there too many competitors (red ocean) or too few customers (no market)?
+- Platform-specific risks (store algorithm changes, policy changes, hardware adoption)?
+
+**Execution Risk:** Can this team build this?
+- Has the team shipped something of this scope before?
+- What's the single hardest technical challenge? Has it been prototyped?
+- Key person dependencies (one person leaves = project dies)?
+
+**Design Risk:** Is the core loop proven?
+- Has anyone played it? (Not "does the GDD describe fun" — has fun been OBSERVED?)
+- What's the falsification plan? How will you know the design is wrong, and when?
+- Is there a pivot plan if the core loop doesn't work?
+
+**Financial Risk:** Does the business model work?
+- Development cost estimate (realistic, not optimistic)
+- Revenue projection (use genre median, not top 1%)
+- Break-even point: how many copies/downloads/MAU?
+- Runway: how many months until money runs out if the game underperforms?
+
+**Timeline Risk:** Can this ship on schedule?
+- What's the critical path? (Single longest chain of dependent tasks)
+- Where are the schedule compression points? (What can be parallelized?)
+- What's the "oh no" date — the point of no return where the schedule is clearly broken?
+
+### Risk Matrix
+
+For each risk:
+
+| Risk | Probability | Impact | P×I Score | Mitigation | Detection |
+|------|-------------|--------|-----------|------------|-----------|
+| [name] | Low/Med/High | Low/Med/High | 1-9 | Specific plan | How you'd know |
+
+**Mitigation must be specific.** "We'll fix it later" is not mitigation. "If core loop testing fails by Week 6, we pivot to [alternative] using [existing assets]" is mitigation.
+
+**Detection must be concrete.** "We'll know" is not detection. "If D1 retention is below 25% in closed alpha with 50+ players, the core loop has a problem" is detection.
+
+**STOP.** One AskUserQuestion per high/critical risk. Medium/low risks can be presented in batches.
+
+---
+
+## Section 4: Milestone & Resource Planning
+
+### Current Milestone Assessment
+
+| Question | Answer |
+|----------|--------|
+| What milestone are you in? | (Concept / Pre-production / Production / Alpha / Beta / Polish / Launch) |
+| What should be TRUE by end of this milestone? | (Specific, testable criteria) |
+| What IS true right now? | (Honest assessment) |
+| Gap? | (What's missing to complete this milestone?) |
+
+### Milestone Gate Criteria
+
+Each milestone transition should have clear gates:
+
+| Transition | Gate Criteria |
+|------------|--------------|
+| Concept → Pre-production | Core loop defined, team assembled, scope estimated |
+| Pre-production → Production | Core loop PROVEN fun (playtested), tech pipeline working, art style locked |
+| Production → Alpha | All systems functional (ugly is OK), full gameplay loop playable |
+| Alpha → Beta | Content complete, no game-breaking bugs, performance within budget |
+| Beta → Polish | All known bugs fixed, UX tested, platform requirements met |
+| Polish → Launch | Store page ready, marketing plan, day-one patch plan, live ops plan |
+
+Flag any gates being skipped. Skipping gates is the #1 cause of troubled game projects.
+
+### Team Utilization
+
+- Any bottlenecks? (One discipline overloaded while others idle?)
+- Any single points of failure? (One person whose absence kills the project?)
+- Is the team composition right for the current milestone? (Too many designers in production? Not enough QA in beta?)
+
+### Critical Path
+
+> "What is the single longest chain of dependent tasks from now to launch?"
+
+Identify it. Everything on the critical path gets priority. Everything NOT on the critical path can slip without affecting launch date.
+
+**STOP.** One AskUserQuestion per major planning issue.
+
+---
+
+## Required Outputs
+
+### Completion Summary
+
+```
+Direction Review:
+  Premise Challenge: [PASSED / CONCERNS / NEEDS RETHINK]
+  Mode: [AMBITIOUS / FOCUSED / PIVOT / SHELVE]
+  Strategic Alignment:
+    Patterns checked: [X/10]
+    Critical findings: [count]
+    High findings: [count]
+  Scope Review:
+    Added: [count]
+    Kept: [count]
+    Deferred: [count]
+    Cut: [count]
+    Scope gap: [+X or -X person-weeks]
+  Risk Assessment:
+    Critical risks: [count]
+    High risks: [count]
+    Medium risks: [count]
+    Low risks: [count]
+    Unmitigated: [count]
+  Milestone:
+    Current: [milestone name]
+    Next gate: [what needs to be true]
+    Critical path: [one-line description]
+  Next Step:
+    PRIMARY: /game-eng-review — direction set, validate technical feasibility
+    (if mode = PIVOT): /game-ideation — start over with new direction
+    (if mode = SHELVE): none — project shelved, no next step
+
+  STATUS: DONE / DONE_WITH_CONCERNS / BLOCKED
+```
+
+**DONE:** Premise passed, scope fits capacity (with buffer), all critical/high risks have mitigation plans.
+
+**DONE_WITH_CONCERNS:** Premise passed but scope gap exists, or 1-2 high risks lack mitigation, or milestone gates being skipped.
+
+**BLOCKED:** Premise failed (recommend `/game-ideation`), scope exceeds capacity by >50% with no cut plan, critical risk has no mitigation, or team cannot build minimum scope.
+
+### Scope Change Log
+
+For each scope decision made during the review:
+```
+| Feature | Decision | Rationale | Person-weeks freed/added |
+|---------|----------|-----------|--------------------------|
+```
+
+### Risk Register
+
+Full risk matrix as documented in Section 3.
+
+## Important Rules
+
+- **Premise challenge comes first.** Do NOT review scope, risk, or milestones before the premise is challenged. If the premise is wrong, everything else is wasted.
+- **Mode shapes everything.** AMBITIOUS, FOCUSED, PIVOT, SHELVE — the tone, questions, and recommendations all change. Don't use AMBITIOUS language in FOCUSED mode.
+- **The scope math is non-negotiable.** Present the numbers (total scope vs. available capacity), then ask what gets cut. Don't let scope exceed capacity without an explicit plan.
+- **ONE scope decision per AskUserQuestion.** Each cut/defer/keep deserves its own consideration. Don't batch.
+- **Cognitive patterns: smart-route, don't dump.** Apply the mode-relevant subset, not all 10.
+- **Phase transitions require check-in.** After Section 1, ask before moving to Section 2. After Section 2, ask before Section 3.
+- **Escape hatch:** If user says "just give me the summary":
+  - First time: "Two more key findings, then I'll summarize."
+  - Second time: Respect it. Present completion summary with what's been covered.
+- **Never prescribe the game design.** This skill evaluates DIRECTION (should we? can we? how?), not DESIGN (what should the loop be?). Design questions go to `/game-review`.
+
+## Save Artifact
+
+```bash
+_DATETIME=$(date +%Y%m%d-%H%M%S)
+echo "Saving to: $_PROJECTS_DIR/${_USER}-${_BRANCH}-direction-review-${_DATETIME}.md"
+```
+
+Write the Direction Review report (Completion Summary + Scope Change Log + Risk Register) to `$_PROJECTS_DIR/{user}-{branch}-direction-review-{datetime}.md`. If a prior direction review exists, include `Supersedes: {prior filename}` at the top.
+
+This artifact is discoverable by:
+- `/game-review` — reads scope decisions and risk findings
+- `/game-eng-review` — reads technical risk flags and scope constraints
+- `/pitch-review` — reads strategic alignment and market positioning
+- `/game-ship` — checks direction review status as a release gate
+

@@ -2,14 +2,68 @@
 
 Apps live or die on whether real users can complete real tasks reliably, on real devices, and — for most — whether they can get through a store review and get updated safely. Weight your read toward **end-to-end user flows** (can someone sign up, do the core action, and come back tomorrow?) and toward **release plumbing** (build, sign, distribute, update). A pile of beautiful screens with no working data layer is early-stage no matter how it looks.
 
+Use with [phase-scoring.md](phase-scoring.md) for placement and [next-slice.md](next-slice.md) for slice patterns.
+
 ## Phase ladder
 
-1. **Concept / Prototype** — proving the idea or a key interaction. Hardcoded/mock data, one or two screens, no persistence, no auth. Signal: UI exists but no real backend/storage wiring; lots of `TODO`, fake data.
-2. **MVP build-out** — the core flow is being wired end-to-end for the first time. Signal: real data layer appearing (API client, local DB), auth stubs, navigation across the main screens, but edge cases and secondary flows missing.
-3. **Feature-complete / Alpha** — all primary flows work on the happy path; internal/dogfood use. Signal: persistence, auth, main features present; error handling and empty/loading states thin; few tests.
-4. **Beta** — hardening for real users: error states, offline behavior, device/OS matrix, performance, crash reporting, TestFlight/Play internal testing. Signal: crash/analytics SDKs, feature flags, beta distribution config, bugfix-heavy commits.
-5. **Launch / Release** — store submission and public availability. Signal: store metadata (`fastlane/`, screenshots, `*.plist`, `AndroidManifest` with release config), signing config, release CI, version tags.
-6. **Growth / Maintenance** — post-launch: retention, updates, new features against a live user base. Signal: analytics-driven work, A/B infra, staged rollouts, changelog cadence, deprecation cleanup.
+### 1. Concept / Prototype
+Proving the idea or a key interaction. Hardcoded/mock data, one or two screens, no persistence, no auth.
+
+**Evidence bullets:**
+- UI screens exist (Flutter widgets, SwiftUI views, Compose screens) but data is hardcoded or mock
+- No API client, local DB, or persistence layer wired
+- Navigation may exist between 2–3 screens only
+- Lots of `TODO`, `mock`, `fake`, or `sample` in data layer
+- Runs locally only; no release config
+
+### 2. MVP build-out
+The core flow is being wired end-to-end for the first time.
+
+**Evidence bullets:**
+- Real API client or local database appearing in codebase
+- Auth stubs or basic sign-in flow (happy path)
+- Navigation across main screens connected
+- Primary action persists or fetches real data
+- Edge cases, secondary flows, and error states still missing
+
+### 3. Feature-complete / Alpha
+All primary flows work on the happy path; internal/dogfood use.
+
+**Evidence bullets:**
+- Persistence and auth work on happy path
+- Main features from PRD/README present in code
+- Error handling and empty/loading states thin or absent
+- Few tests — maybe one smoke test
+- No crash reporting or analytics SDK yet
+
+### 4. Beta
+Hardening for real users: error states, offline behavior, device/OS matrix, performance, crash reporting, TestFlight/Play internal testing.
+
+**Evidence bullets:**
+- Crash reporting SDK (Sentry, Crashlytics, Firebase Crashlytics)
+- Error, empty, loading, offline states on core flows
+- Beta distribution config (TestFlight, internal track, Firebase App Distribution)
+- Feature flags may appear
+- Bugfix-heavy commits; analytics integration
+
+### 5. Launch / Release
+Store submission and public availability.
+
+**Evidence bullets:**
+- Store metadata (`fastlane/`, screenshots, store listing JSON)
+- Signing config (provisioning profiles, keystore, release build.gradle)
+- Release CI pipeline
+- Version tags; release branches
+- `AndroidManifest` / `Info.plist` release configurations
+
+### 6. Growth / Maintenance
+Post-launch: retention, updates, new features against a live user base.
+
+**Evidence bullets:**
+- Analytics-driven commits; funnel or retention work
+- A/B or experiment infrastructure
+- Staged rollouts; changelog cadence
+- Deprecation cleanup; dependency updates against production
 
 ## What to look for
 
@@ -36,3 +90,29 @@ Apps live or die on whether real users can complete real tasks reliably, on real
 - No crash reporting before a public launch — you'll be blind to the failures that lose users.
 - Underestimated store-review / signing / distribution work — routinely the surprise that stalls a "nearly done" app.
 - Auth and account edge cases (password reset, token expiry, logout) left as `TODO` into beta.
+
+## Typical next-slice types (see [next-slice.md](next-slice.md))
+
+| Situation | Slice pattern |
+|-----------|---------------|
+| UI exists, data mocked | Core flow E2E — wire real persistence on primary journey |
+| Happy path works, fragile | Robustness pass — error/empty/offline on core screens |
+| Alpha quality, no observability | Observability slice — crash reporting before beta |
+| Beta quality, no store assets | Store-readiness — signing, metadata, release build |
+
+## Bundled deep tools (same pack)
+
+After the parent chain writes the handoff, route inside `skills/` — do not leave this pack:
+
+| Finding | Tool |
+|---------|------|
+| Need a full feature PRD, not a build slice | `skills/prd` |
+| Unsure about state model / UI shape | `skills/prototype` |
+| Domain terms conflicting or missing | `skills/domain-modeling` |
+| Module boundaries fuzzy | `skills/codebase-design` |
+| Building from handoff | `skills/tdd` |
+| UI/a11y while implementing screens | `skills/typeui-fundamentals` |
+| Stuck on a hard bug | `skills/diagnosing-bugs` |
+| Stress-test destination / slice | [grilling.md](grilling.md) |
+
+Catalog: [skills/README.md](../skills/README.md).

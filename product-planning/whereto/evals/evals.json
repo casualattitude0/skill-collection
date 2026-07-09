@@ -5,48 +5,146 @@
       "id": 0,
       "name": "game-late-prototype",
       "prompt": "What phase is this game in and what should I do next? The project is in ./fixtures/game.",
-      "expected_output": "Identifies it as a Game (Godot), places it at late prototype / pre-vertical-slice (NOT beta/production/launch), flags the stubbed save system as a downstream blocker, notes the huge scope gap between the GDD (12 levels, 20 enemies, 15 upgrades) and what exists (1 grey-box level, 1 enemy, 0 upgrades), reads git as recently active, proposes a vertical-slice-first roadmap with exit criteria, and writes PROJECT_PHASE.md.",
-      "files": ["fixtures/game"],
+      "expected_output": "Identifies it as a Game (Godot), places it at late prototype / pre-vertical-slice (NOT beta/production/launch) with evidence scorecard, flags the stubbed save system as a downstream blocker, notes the huge scope gap between the GDD (12 levels, 20 enemies, 15 upgrades) and what exists (1 grey-box level, 1 enemy, 0 upgrades), reads git as recently active, proposes a vertical-slice-first roadmap with exit criteria per phase, scores 3 next-slice candidates and recommends ONE vertical-slice slice with /10 score, writes PROJECT_PHASE.md with Next Slice section, and writes IMPLEMENTATION_HANDOFF.md with MUST scope and acceptance criteria.",
+      "files": [
+        "fixtures/game"
+      ],
       "assertions": [
-        {"text": "Classifies the project type as Game (and identifies the Godot engine)"},
-        {"text": "Places the current phase at prototype / pre-vertical-slice, NOT beta, production, or launch"},
-        {"text": "Flags the stubbed save system as a blocker for later phases"},
-        {"text": "Names the scope gap between the GDD's target (12 levels / 20 enemies / 15 upgrades) and what actually exists (1 level, 1 enemy, 0 upgrades)"},
-        {"text": "Reads git history to report momentum (recent, roughly monthly commits, actively worked)"},
-        {"text": "Proposes a next-phase roadmap whose first milestone is a vertical slice / proving one level end-to-end, each phase with an exit criterion"},
-        {"text": "Writes a PROJECT_PHASE.md roadmap file into the project"}
+        {
+          "text": "Classifies the project type as Game (and identifies the Godot engine)"
+        },
+        {
+          "text": "Places the current phase at prototype / pre-vertical-slice, NOT beta, production, or launch"
+        },
+        {
+          "text": "Uses evidence scorecard or explicitly contrasts stated vs evidence phase (does not accept README phase claims blindly)"
+        },
+        {
+          "text": "Flags the stubbed save system as a blocker for later phases"
+        },
+        {
+          "text": "Names the scope gap between the GDD's target (12 levels / 20 enemies / 15 upgrades) and what actually exists (1 level, 1 enemy, 0 upgrades)"
+        },
+        {
+          "text": "Reads git history to report momentum (recent, roughly monthly commits, actively worked)"
+        },
+        {
+          "text": "Proposes a next-phase roadmap whose first milestone is a vertical slice / proving one level end-to-end, each phase with an exit criterion, dependencies, and rough effort"
+        },
+        {
+          "text": "Scores 3 next-slice candidates and recommends exactly ONE with a numeric score out of 10"
+        },
+        {
+          "text": "Next slice includes hypothesis, success criteria, and rejected alternatives"
+        },
+        {
+          "text": "Writes a PROJECT_PHASE.md roadmap file into the project with a Next Slice section"
+        },
+        {
+          "text": "Writes IMPLEMENTATION_HANDOFF.md with MUST-tagged scope items and acceptance criteria (Engineering Done and Experience Done)"
+        },
+        {
+          "text": "Routes next steps to bundled skills/ paths (not an outer gstack-game install) when suggesting game-review or similar"
+        }
       ]
     },
     {
       "id": 1,
       "name": "app-mvp-alpha",
       "prompt": "I inherited this Flutter project in ./fixtures/app. Where's it at and where should it go?",
-      "expected_output": "Identifies it as an APP (Flutter), places it at MVP transitioning to alpha, notes the real data layer + auth happy path work and persistence exists, flags missing crash reporting/observability and missing error/empty/offline states as gaps before a store launch, notes thin tests (one smoke test), reads git momentum, and writes a roadmap with exit criteria toward a store launch.",
-      "files": ["fixtures/app"],
+      "expected_output": "Identifies it as an APP (Flutter), places it at MVP transitioning to alpha with evidence scorecard, notes the real data layer + auth happy path work and persistence exists, flags missing crash reporting/observability and missing error/empty/offline states as gaps before a store launch, notes thin tests (one smoke test), reads git momentum, writes a roadmap with exit criteria toward a store launch, scores and recommends ONE robustness or observability next slice, writes PROJECT_PHASE.md and IMPLEMENTATION_HANDOFF.md.",
+      "files": [
+        "fixtures/app"
+      ],
       "assertions": [
-        {"text": "Classifies the project type as APP and identifies Flutter"},
-        {"text": "Places the current phase at MVP / early alpha, NOT beta or launch-ready"},
-        {"text": "Recognizes that the data layer, API auth happy path, and local persistence already work"},
-        {"text": "Flags the absence of crash reporting / analytics / observability as a gap before a public launch"},
-        {"text": "Flags missing robustness states (error / empty / loading / offline)"},
-        {"text": "Notes the thin test coverage (only a smoke test)"},
-        {"text": "Writes a PROJECT_PHASE.md roadmap with phases and exit criteria"}
+        {
+          "text": "Classifies the project type as APP and identifies Flutter"
+        },
+        {
+          "text": "Places the current phase at MVP / early alpha, NOT beta or launch-ready"
+        },
+        {
+          "text": "Uses evidence scorecard or cites concrete signals for phase placement"
+        },
+        {
+          "text": "Recognizes that the data layer, API auth happy path, and local persistence already work"
+        },
+        {
+          "text": "Flags the absence of crash reporting / analytics / observability as a gap before a public launch"
+        },
+        {
+          "text": "Flags missing robustness states (error / empty / loading / offline)"
+        },
+        {
+          "text": "Notes the thin test coverage (only a smoke test)"
+        },
+        {
+          "text": "Scores 3 next-slice candidates and recommends exactly ONE with a numeric score out of 10"
+        },
+        {
+          "text": "Writes a PROJECT_PHASE.md roadmap with phases, exit criteria, and Next Slice section"
+        },
+        {
+          "text": "Writes IMPLEMENTATION_HANDOFF.md with MUST-tagged scope and acceptance criteria"
+        }
       ]
     },
     {
       "id": 2,
       "name": "web-overclaimed-beta",
       "prompt": "Help me plan the roadmap for the website in ./fixtures/web.",
-      "expected_output": "Identifies it as a WEB project (Next.js marketing site), and critically does NOT take the README's 'basically ready to ship' claim at face value — reads the evidence and places it at alpha/beta, not launch-ready. Flags placeholder content (lorem pricing and about page), the absence of any deploy config (no vercel.json/netlify.toml/CI), missing SEO/meta/sitemap/robots, and the non-responsive nav. Writes a roadmap to close those gaps before launch.",
-      "files": ["fixtures/web"],
+      "expected_output": "Identifies it as a WEB project (Next.js marketing site), and critically does NOT take the README's 'basically ready to ship' claim at face value \u2014 reads the evidence and places it at alpha/beta, not launch-ready. Flags placeholder content (lorem pricing and about page), the absence of any deploy config (no vercel.json/netlify.toml/CI), missing SEO/meta/sitemap/robots, and the non-responsive nav. Writes a roadmap to close those gaps before launch, scores and recommends ONE launch-gap next slice, writes PROJECT_PHASE.md and IMPLEMENTATION_HANDOFF.md.",
+      "files": [
+        "fixtures/web"
+      ],
       "assertions": [
-        {"text": "Classifies the project type as WEB and identifies Next.js"},
-        {"text": "Does NOT accept the README's 'basically ready to ship' claim — explicitly places the project short of launch based on evidence"},
-        {"text": "Flags placeholder / lorem-ipsum content (pricing section and about page) as unfinished"},
-        {"text": "Flags the absence of any deploy configuration or CI/CD (no vercel.json, netlify.toml, or pipeline)"},
-        {"text": "Flags missing SEO essentials (meta/OG tags, sitemap.xml, robots.txt)"},
-        {"text": "Notes the non-responsive nav / lack of responsive work"},
-        {"text": "Writes a PROJECT_PHASE.md roadmap with phases and exit criteria"}
+        {
+          "text": "Classifies the project type as WEB and identifies Next.js"
+        },
+        {
+          "text": "Does NOT accept the README's 'basically ready to ship' claim \u2014 explicitly places the project short of launch based on evidence"
+        },
+        {
+          "text": "Flags placeholder / lorem-ipsum content (pricing section and about page) as unfinished"
+        },
+        {
+          "text": "Flags the absence of any deploy configuration or CI/CD (no vercel.json, netlify.toml, or pipeline)"
+        },
+        {
+          "text": "Flags missing SEO essentials (meta/OG tags, sitemap.xml, robots.txt)"
+        },
+        {
+          "text": "Notes the non-responsive nav / lack of responsive work"
+        },
+        {
+          "text": "Scores 3 next-slice candidates and recommends exactly ONE with a numeric score out of 10"
+        },
+        {
+          "text": "Writes a PROJECT_PHASE.md roadmap with phases, exit criteria, and Next Slice section"
+        },
+        {
+          "text": "Writes IMPLEMENTATION_HANDOFF.md with MUST-tagged scope (deploy, content, SEO) and acceptance criteria"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "app-routes-to-bundled-engineering",
+      "prompt": "After planning, what should I do next to build the handoff for this Flutter app? Do not leave the whereto pack.",
+      "expected_output": "Points at in-pack skills/tdd and/or skills/typeui-fundamentals and/or skills/diagnosing-bugs \u2014 never an outer engineering/ or product-planning/prd path. Mentions IMPLEMENTATION_HANDOFF.md as the build source.",
+      "files": [
+        "fixtures/app"
+      ],
+      "assertions": [
+        {
+          "text": "Routes to skills/ paths inside the whereto pack"
+        },
+        {
+          "text": "Does not require an outer product-planning/prd or engineering/ install"
+        },
+        {
+          "text": "Mentions building from IMPLEMENTATION_HANDOFF or equivalent handoff artifact"
+        }
       ]
     }
   ]
