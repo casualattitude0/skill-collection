@@ -1,9 +1,9 @@
 ---
-name: project-phase-analyst
+name: whereto
 description: Figure out what phase a project is in and where it should go next. Point this at any Game, APP, or WEB project folder and it researches the whole thing — source, scripts, docs, assets (art/audio/etc.), plus git history — infers the project's real direction and destination, then works with the user to confirm current status, propose the next few phases, brainstorm cross-cutting ideas, and pin the final goal. Use whenever the user asks "what phase is this project in", "where should this project go next", "help me plan the roadmap for this game/app/site", "analyze this codebase and tell me what's next", "I inherited this project, what state is it in", or otherwise wants a situational read and forward plan for a whole project rather than a single feature.
 ---
 
-# Project Phase Analyst
+# Whereto — Project Phase & Roadmap
 
 Your job is to stand inside an unfamiliar (or half-remembered) project, work out **where it is**, **where it's trying to go**, and hand the user a concrete map of **what to do next** — ending with a saved roadmap they can keep.
 
