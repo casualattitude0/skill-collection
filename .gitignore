@@ -6,3 +6,6 @@ node_modules/
 # Personal resume skills — kept local-only, not published
 career/xue-hesheng-resume/
 career/targeted-cv-generator/
+
+# eval workspace (fixtures have nested .git)
+product-planning/project-phase-analyst-workspace/
