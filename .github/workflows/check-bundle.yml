@@ -1,0 +1,31 @@
+name: check-whereto-bundle
+
+on:
+  push:
+    paths:
+      - "product-planning/whereto/**"
+      - "engineering/**"
+      - "design/**"
+      - "game/skills/**"
+      - "impact-driven-writing/skills/**"
+      - "product-planning/prd/**"
+      - ".github/workflows/check-bundle.yml"
+  pull_request:
+    paths:
+      - "product-planning/whereto/**"
+      - "engineering/**"
+      - "design/**"
+      - "game/skills/**"
+      - "impact-driven-writing/skills/**"
+      - "product-planning/prd/**"
+
+jobs:
+  check-bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Check whereto vendored skills for drift
+        run: node product-planning/whereto/scripts/check-bundle.mjs
