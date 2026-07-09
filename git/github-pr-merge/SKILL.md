@@ -31,9 +31,21 @@ never calls a model — it only talks to `gh`.
 > `node driver.mjs ...` from here, or with the full path
 > `node git/github-pr-merge/driver.mjs ...` from the repo root.
 
+## One account for the whole PR process
+
+The entire flow — branch push, open, merge — runs as a **single GitHub
+identity**, so a machine with more than one `gh` account never opens the PR as
+one account while the SSH branch push lands as another. The driver pins the
+account named in `ACCOUNT` (default `casualattitude0`, account #1 from
+`gh auth status`): it runs `gh auth switch` before every command and pushes
+the branch over HTTPS using that account's `gh` credential rather than the SSH
+key `origin` resolves to. Override with `GH_PR_ACCOUNT=<user>`. If `gh` is
+authenticated as a different account and can't switch, the driver stops with a
+clear message instead of silently using the wrong identity.
+
 ## Prerequisites
 
-- `gh` authenticated: `gh auth status` must show a logged-in account with
+- `gh` authenticated: `gh auth status` must show the pinned account with
   `repo` scope.
 - Node 18+ (`driver.mjs` is plain ESM, no deps).
 - A git remote named `origin` you can push to.
@@ -84,10 +96,11 @@ node driver.mjs status <pr-number>   # -> {"state":"MERGED","merged":true,...}
   merged) or `state == "MERGED"`. The driver derives `merged` from
   `mergedAt`; don't add `merged` to the field list or `gh` errors with
   "Unknown JSON field".
-- **Push protocol is whatever `origin` uses.** `open` runs
-  `git push -u origin <head>` and relies on your existing SSH/HTTPS auth. If
-  the branch already exists upstream the push is a no-op and the PR still
-  opens.
+- **The branch push ignores `origin`'s protocol on purpose.** Even when
+  `origin` is SSH, `open` pushes over HTTPS to the same repo using the pinned
+  account's `gh` credential, so the branch is created by that one account —
+  not by whatever the SSH key resolves to. If the branch already exists
+  upstream the push is a no-op and the PR still opens.
 - **Default method is `merge` (a merge commit), not `squash`.** A merge
   commit shows the source branch joining back into the target ("Merge pull
   request #N from `<head>`"). `squash`/`rebase` replay the commits onto the
@@ -106,4 +119,5 @@ node driver.mjs status <pr-number>   # -> {"state":"MERGED","merged":true,...}
 | `pull request create failed: ... No commits between base and head` | The source branch has no new commits vs. base — commit first. |
 | `Unknown JSON field: "merged"` | You edited the field list; use `mergedAt` (see Gotchas). |
 | `Pull request is not mergeable` | Resolve conflicts / branch protection on the base, then re-run `merge`. |
-| Push prompts for credentials / fails | `origin` auth issue, unrelated to the driver — fix `git push` first. |
+| `gh is authenticated as "X", but this skill is pinned to "Y"` | Run `gh auth switch --user Y`, or set `GH_PR_ACCOUNT=X` to use the current one. |
+| Push prompts for credentials / fails | `gh` credential/token issue — run `gh auth status` and re-auth the pinned account. |

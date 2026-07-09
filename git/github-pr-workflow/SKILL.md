@@ -32,9 +32,22 @@ never calls a model — it only talks to `gh`.
 > `node driver.mjs ...` from here, or with the full path
 > `node git/github-pr-workflow/driver.mjs ...` from the repo root.
 
+## One account for the whole PR process
+
+The entire flow — branch push, open, merge, comment — runs as a **single
+GitHub identity**, so a machine with more than one `gh` account never opens
+the PR as one account while the SSH branch push lands as another. The driver
+pins the account named in `ACCOUNT` (default `casualattitude0`, account #1
+from `gh auth status`): it runs `gh auth switch` before every command and
+pushes the branch over HTTPS using that account's `gh` credential rather than
+the SSH key `origin` resolves to. Override with `GH_PR_ACCOUNT=<user>`, e.g.
+`GH_PR_ACCOUNT=other node driver.mjs open ...`. If `gh` is authenticated as a
+different account and can't switch, the driver stops with a clear message
+instead of silently using the wrong identity.
+
 ## Prerequisites
 
-- `gh` authenticated: `gh auth status` must show a logged-in account with
+- `gh` authenticated: `gh auth status` must show the pinned account with
   `repo` scope. (Verified with `gh version 2.89.0`.)
 - Node 18+ (`driver.mjs` is plain ESM, no deps).
 - A git remote named `origin` you can push to.
@@ -99,14 +112,16 @@ node driver.mjs fail <pr-number> --reason "sandbox_add.js:2 — returns a - b, s
 ```
 
 Then apply the fix on the **source branch**, push, and loop back to step 2
-(`context` → sub-agent → `pass`/`fail`). Pushed commits show up on the open
-PR automatically — no need to reopen it:
+(`context` → sub-agent → `pass`/`fail`). Push through the driver so the fix
+commits land under the same pinned account as the rest of the PR — not via a
+plain `git push origin`, which would use the SSH key's identity. Pushed
+commits show up on the open PR automatically — no need to reopen it:
 
 ```bash
 git checkout <source-branch>
 # ...edit files...
 git commit -am "fix: address review"
-git push origin <source-branch>
+node driver.mjs push <source-branch>   # pushes as the pinned account
 git checkout -   # back to where you were
 ```
 
@@ -118,6 +133,7 @@ git checkout -   # back to where you were
 | `context <pr>` | Print title + body + files + diff for the reviewer |
 | `pass <pr> [--method merge\|squash\|rebase] [--no-delete-branch]` | Merge into target (default: merge commit) + delete branch |
 | `fail <pr> --reason <text>` | Post a "Failed" review comment |
+| `push <branch>` | Push `<branch>` to origin as the pinned account (fix loop) |
 | `status <pr>` | Print `{state,mergeable,merged,base,head}` |
 
 ## Gotchas
@@ -129,10 +145,12 @@ git checkout -   # back to where you were
 - **zsh `noclobber` blocks `>` redirects** ("file exists" even when
   overwriting). When scripting fixes in this shell, `unsetopt noclobber`
   first, or use `>!`, or write via the editor tool instead of `cat >`.
-- **Push protocol is whatever `origin` uses.** This repo's `origin` is SSH
-  (`git@github.com:...`); `open` runs `git push -u origin <head>` and relies
-  on your existing SSH/HTTPS auth. If the branch already exists upstream the
-  push is a no-op and the PR still opens.
+- **The branch push ignores `origin`'s protocol on purpose.** Even when
+  `origin` is SSH (`git@github.com:...`), `open`/`push` push over HTTPS to the
+  same repo using the pinned account's `gh` credential, so the branch is
+  created by that one account — not by whatever the SSH key resolves to. This
+  is what keeps the whole PR process on a single identity. If the branch
+  already exists upstream the push is a no-op and the PR still opens.
 - **Review the *latest* diff.** After pushing a fix, re-run `context` before
   re-reviewing — `gh pr diff` reflects the new commits immediately.
 - **Default method is `merge` (a merge commit), not `squash`.** A merge
@@ -152,7 +170,8 @@ git checkout -   # back to where you were
 | `pull request create failed: ... No commits between base and head` | The source branch has no new commits vs. base — commit first. |
 | `Unknown JSON field: "merged"` | You edited the field list; use `mergedAt` (see Gotchas). |
 | `(eval): file exists: <f>` on a `>` redirect | zsh `noclobber`; see Gotchas. |
-| Push prompts for credentials / fails | `origin` auth issue, unrelated to the driver — fix `git push` first. |
+| `gh is authenticated as "X", but this skill is pinned to "Y"` | Run `gh auth switch --user Y`, or set `GH_PR_ACCOUNT=X` to use the current one. |
+| Push prompts for credentials / fails | `gh` credential/token issue — run `gh auth status` and re-auth the pinned account. |
 
 ## Verified end-to-end
 
