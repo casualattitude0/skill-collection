@@ -1,0 +1,39 @@
+# Environment
+.env
+.env.local
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Bun
+bun.lock
+*.bun-build
+
+# Claude Code local settings
+.claude/settings.local.json
+.context/
+
+# gstack local state
+.gstack/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Logs & telemetry (local only)
+*.log
+*.jsonl
+
+# Temp
+/tmp/
+.claude/worktrees/
+.tmp/

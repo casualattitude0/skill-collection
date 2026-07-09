@@ -14,6 +14,7 @@ installed from upstream GitHub repos; each is activated by symlinking it into
 | `flutter/` | 10 | Flutter / Dart app development |
 | `golang/` | 8 | Go language development |
 | `unity/` | 1 | Unity DOTS/ECS patterns |
+| `game/` | 29 | Game-dev workflow — design review, planning, playtest, ship (gstack-game) |
 | `design/` | 2 | UI/UX design principles, accessibility & AI-frontend craft |
 | `git/` | 2 | GitHub PR review-and-merge workflow, batch commits |
 | `product-planning/` | 1 | Product requirements docs |
@@ -131,6 +132,23 @@ and doc layout the other skills rely on.
 | Skill | Source | Purpose |
 |-------|--------|---------|
 | `unity-ecs-patterns` | [wshobson/agents](https://github.com/wshobson/agents) | Unity DOTS/ECS — Jobs, Burst, archetypes |
+
+### game/ — source: [fagemx/gstack-game](https://github.com/fagemx/gstack-game)
+
+A self-contained package of 29 game-dev skills sharing `bin/` tooling and a
+`gstack-config` system. Strongest in design review and planning, with dev-phase
+support. Entry point `/gstack-game` routes to the right sub-skill; run
+`game/bin/install.sh` to wire up the shared config.
+
+| Skill | Purpose |
+|-------|---------|
+| `game-ideation` / `spark-lens` / `game-import` | Brainstorm ideas, generate creative sparks, turn docs into a GDD |
+| `game-direction` / `game-review` / `pitch-review` | Review strategy, design docs, and pitches |
+| `game-eng-review` / `gameplay-implementation-review` / `balance-review` | Technical, code, and economy/balance review |
+| `player-experience` / `game-ux-review` / `playtest` | Simulate player experience, review UX, design playtests |
+| `game-qa` / `game-visual-qa` / `game-debug` / `asset-review` | QA, visual audits, debugging, asset pipeline review |
+| `game-ship` / `game-retro` / `game-docs` / `game-codex` | Ship/PR, retrospectives, doc updates, adversarial second opinion |
+| `careful` / `guard` / `unfreeze` | Edit-scope guardrails for production/live systems |
 
 ### design/
 
