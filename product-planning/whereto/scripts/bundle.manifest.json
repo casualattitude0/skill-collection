@@ -1,0 +1,191 @@
+{
+  "$schema": "./bundle.schema.json",
+  "description": "Source-of-truth map for skills vendored into whereto/skills/. mode=copy means bundled files must match source (ignoring the bundled_into marker); the bundle may omit upstream plugin scaffolding. mode=adapt means the bundle was gstack-stripped from a game skill and is expected to diverge, so only presence is checked. Validated by check-bundle.mjs.",
+  "skills": [
+    {
+      "name": "asset-review",
+      "source": "game/skills/asset-review",
+      "mode": "adapt"
+    },
+    {
+      "name": "avoid-ai-writing",
+      "source": "impact-driven-writing/skills/avoid-ai-writing",
+      "mode": "copy"
+    },
+    {
+      "name": "balance-review",
+      "source": "game/skills/balance-review",
+      "mode": "adapt"
+    },
+    {
+      "name": "build-playability-review",
+      "source": "game/skills/build-playability-review",
+      "mode": "adapt"
+    },
+    {
+      "name": "careful",
+      "source": "game/skills/careful",
+      "mode": "adapt"
+    },
+    {
+      "name": "codebase-design",
+      "source": "engineering/codebase-design",
+      "mode": "copy"
+    },
+    {
+      "name": "diagnosing-bugs",
+      "source": "engineering/diagnosing-bugs",
+      "mode": "copy"
+    },
+    {
+      "name": "domain-modeling",
+      "source": "engineering/domain-modeling",
+      "mode": "copy"
+    },
+    {
+      "name": "feel-pass",
+      "source": "game/skills/feel-pass",
+      "mode": "adapt"
+    },
+    {
+      "name": "game-codex",
+      "source": "game/skills/game-codex",
+      "mode": "adapt"
+    },
+    {
+      "name": "game-debug",
+      "source": "game/skills/game-debug",
+      "mode": "adapt"
+    },
+    {
+      "name": "game-direction",
+      "source": "game/skills/game-direction",
+      "mode": "adapt"
+    },
+    {
+      "name": "game-docs",
+      "source": "game/skills/game-docs",
+      "mode": "adapt"
+    },
+    {
+      "name": "game-eng-review",
+      "source": "game/skills/game-eng-review",
+      "mode": "adapt"
+    },
+    {
+      "name": "game-ideation",
+      "source": "game/skills/game-ideation",
+      "mode": "adapt"
+    },
+    {
+      "name": "game-import",
+      "source": "game/skills/game-import",
+      "mode": "adapt"
+    },
+    {
+      "name": "game-qa",
+      "source": "game/skills/game-qa",
+      "mode": "adapt"
+    },
+    {
+      "name": "game-retro",
+      "source": "game/skills/game-retro",
+      "mode": "adapt"
+    },
+    {
+      "name": "game-review",
+      "source": "game/skills/game-review",
+      "mode": "adapt"
+    },
+    {
+      "name": "game-ship",
+      "source": "game/skills/game-ship",
+      "mode": "adapt"
+    },
+    {
+      "name": "game-ux-review",
+      "source": "game/skills/game-ux-review",
+      "mode": "adapt"
+    },
+    {
+      "name": "game-visual-qa",
+      "source": "game/skills/game-visual-qa",
+      "mode": "adapt"
+    },
+    {
+      "name": "gameplay-implementation-review",
+      "source": "game/skills/gameplay-implementation-review",
+      "mode": "adapt"
+    },
+    {
+      "name": "guard",
+      "source": "game/skills/guard",
+      "mode": "adapt"
+    },
+    {
+      "name": "implementation-handoff",
+      "source": "game/skills/implementation-handoff",
+      "mode": "adapt"
+    },
+    {
+      "name": "pitch-review",
+      "source": "game/skills/pitch-review",
+      "mode": "adapt"
+    },
+    {
+      "name": "plan-design-review",
+      "source": "game/skills/plan-design-review",
+      "mode": "adapt"
+    },
+    {
+      "name": "player-experience",
+      "source": "game/skills/player-experience",
+      "mode": "adapt"
+    },
+    {
+      "name": "playtest",
+      "source": "game/skills/playtest",
+      "mode": "adapt"
+    },
+    {
+      "name": "prd",
+      "source": "product-planning/prd",
+      "mode": "copy"
+    },
+    {
+      "name": "prototype",
+      "source": "engineering/prototype",
+      "mode": "copy"
+    },
+    {
+      "name": "prototype-slice-plan",
+      "source": "game/skills/prototype-slice-plan",
+      "mode": "adapt"
+    },
+    {
+      "name": "spark-lens",
+      "source": "game/skills/spark-lens",
+      "mode": "adapt"
+    },
+    {
+      "name": "tdd",
+      "source": "engineering/tdd",
+      "mode": "copy"
+    },
+    {
+      "name": "triage",
+      "source": "game/skills/triage",
+      "mode": "adapt"
+    },
+    {
+      "name": "typeui-fundamentals",
+      "source": "design/typeui-fundamentals",
+      "mode": "copy"
+    },
+    {
+      "name": "unfreeze",
+      "source": "game/skills/unfreeze",
+      "mode": "adapt"
+    }
+  ]
+}
