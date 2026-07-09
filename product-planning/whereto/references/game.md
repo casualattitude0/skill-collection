@@ -2,17 +2,79 @@
 
 Games are judged by whether they're *fun* and *finishable*, and both are invisible in a file listing — you have to infer them from what's been built. The classic trap is a project with gorgeous menus and a title screen but no actual gameplay loop: lots of files, almost no game. Weight your read toward the **core loop** (the thing the player does over and over) and toward **content volume**, not toward polish on the shell.
 
+Use with [phase-scoring.md](phase-scoring.md) for placement and [next-slice.md](next-slice.md) for slice patterns.
+
 ## Phase ladder
 
 Place the project on this ladder using evidence, not the README's claim.
 
-1. **Concept / Prototype** — testing whether the core mechanic is fun. Grey-box art, placeholder audio, one messy scene, throwaway code. Signal: mechanics scripts exist but assets are almost all placeholders; no menus/save/settings.
-2. **Vertical Slice** — one small slice (a level, a match) playable start-to-finish at near-final quality, proving the whole stack works together. Signal: one polished level/scene, final-quality core loop, but only one of everything.
-3. **Production** — content is being mass-produced against a proven template. Signal: many levels/scenes/entities following a repeated pattern, asset pipelines, growing content-data files.
-4. **Alpha** — feature-complete (all systems present, even if rough); now it's about content and bugs. Signal: save/load, settings, full menu flow, all mechanics present; lots of `TODO: balance`.
-5. **Beta** — content-complete; focus is polish, balance, performance, playtesting. Signal: no new features landing in git, commits are tuning/bugfix/optimization; QA or feedback docs.
-6. **Gold / Launch** — shipping. Signal: store/platform metadata (Steam depot config, `*.plist`, console SDK), build/packaging scripts, release tag.
-7. **Live-ops / Post-launch** — patches, DLC, seasons, community. Signal: post-launch tags, hotfix branches, analytics/telemetry, content-update cadence.
+### 1. Concept / Prototype
+Testing whether the core mechanic is fun. Grey-box art, placeholder audio, one messy scene, throwaway code.
+
+**Evidence bullets:**
+- Mechanics scripts exist (input, player controller, core verb) but assets are mostly placeholders
+- No save system or save is stubbed/`TODO`
+- No settings, pause, or full menu flow — or menus exist without gameplay behind them
+- One scene/level or sandbox test scene; no content pipeline
+- `TODO`/`FIXME` clusters in gameplay scripts, not polish scripts
+
+### 2. Vertical Slice
+One small slice (a level, a match) playable start-to-finish at near-final quality, proving the whole stack works together.
+
+**Evidence bullets:**
+- Exactly one (or very few) polished level/scene with final-quality core loop
+- Player can complete that slice start-to-finish without debug shortcuts
+- Core feedback chain present (action → response → consequence) in that slice
+- Still only one of everything — one enemy type, one biome, etc.
+- Save may work for that slice only
+
+### 3. Production
+Content is being mass-produced against a proven template.
+
+**Evidence bullets:**
+- Many levels/scenes/entities following a repeated data-driven pattern
+- Asset pipeline or import tools; growing content-data files (JSON/YAML/resources)
+- Commits add content volume, not new systems
+- Level editor or procedural tools may appear
+- Placeholder ratio dropping across new content
+
+### 4. Alpha
+Feature-complete (all systems present, even if rough); now it's about content and bugs.
+
+**Evidence bullets:**
+- Save/load, settings, audio mixer, full menu flow all present (rough OK)
+- All mechanics from GDD exist in some form
+- Lots of `TODO: balance` / tuning comments
+- Multiple levels/scenes but not all content-complete
+- QA notes or internal playtest docs may appear
+
+### 5. Beta
+Content-complete; focus is polish, balance, performance, playtesting.
+
+**Evidence bullets:**
+- No new features landing in recent git — commits are tuning/bugfix/optimization
+- Content count matches or nears GDD targets
+- Playtest feedback docs or bug trackers active
+- Performance profiling commits
+- Final art/audio replacing remaining placeholders
+
+### 6. Gold / Launch
+Shipping.
+
+**Evidence bullets:**
+- Store/platform metadata (Steam depot, `*.plist`, console SDK folders)
+- Build/packaging scripts; release CI
+- Version tags; release branches
+- Age-rating/compliance files if applicable
+
+### 7. Live-ops / Post-launch
+Patches, DLC, seasons, community.
+
+**Evidence bullets:**
+- Post-launch version tags; hotfix branches
+- Analytics/telemetry SDK integrated
+- Content-update cadence in commits
+- Season/battle-pass data files or DLC manifests
 
 ## What to look for
 
@@ -38,3 +100,30 @@ A game prototype can be aimed at very different finish lines — pin which one:
 - No save system this late — it blocks alpha and is often underestimated.
 - Content built by hand with no pipeline, making production phase unsustainable.
 - Scope in the GDD wildly exceeds momentum in git — the honest move may be a scope cut, not a longer roadmap.
+
+## Typical next-slice types (see [next-slice.md](next-slice.md))
+
+| Situation | Slice pattern |
+|-----------|---------------|
+| Core loop unproven | Mechanic prototype — zero progression, test the verb |
+| Loop works, one level only | Vertical slice — one level E2E at target quality |
+| Content exists, no save/menus | Systems shell — save, settings, menu flow |
+| Slice proven, need scale | Content pipeline — prove repeatable level production |
+
+Deeper Game slice catalog (mechanic / onboarding / progression / combat / economy / vertical): `skills/prototype-slice-plan/references/slice-types.md` in this pack.
+
+## Bundled deep tools (same pack)
+
+When research or conversation shows a specialized need, read the matching skill under `skills/` — do not leave this pack:
+
+| Finding | Tool |
+|---------|------|
+| GDD exists but unreviewed / design risk high | `skills/game-review` |
+| Asset polish / pipeline blocking production | `skills/asset-review` |
+| Economy / faucet-sink unclear | `skills/balance-review` |
+| FTUE / churn / persona friction | `skills/player-experience` |
+| Playable build, feel unknown | `skills/feel-pass` |
+| Playable build, "is it worth playing?" | `skills/build-playability-review` |
+| Don't know which tool | `skills/triage` |
+
+Catalog: [skills/README.md](../skills/README.md).

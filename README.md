@@ -17,10 +17,14 @@ installed from upstream GitHub repos; each is activated by symlinking it into
 | `game/` | 29 | Game-dev workflow — design review, planning, playtest, ship (gstack-game) |
 | `design/` | 2 | UI/UX design principles, accessibility & AI-frontend craft |
 | `git/` | 2 | GitHub PR review-and-merge workflow, batch commits |
-| `product-planning/` | 1 | Product requirements docs |
+| `product-planning/` | 2 | Project phase analysis, roadmaps, PRDs |
 | `impact-driven-writing/` | 5 | Writing — AI-ism removal, humanizer, showcase, docs |
 
 ## Activation
+
+Skills use the [Agent Skills](https://agentskills.io) `SKILL.md` format. Most folders target **Claude Code** by default; several also ship multi-harness installers.
+
+### Claude Code (default)
 
 ```bash
 # activate (takes effect next Claude Code session)
@@ -29,6 +33,23 @@ ln -sfn "$PWD/<folder>/<skill>" ~/.claude/skills/<skill>
 # deactivate (repo copy stays intact)
 rm ~/.claude/skills/<skill>
 ```
+
+### All agent IDEs — product-planning
+
+`whereto` and `prd` install into Claude Code, Cursor, Codex, Gemini, OpenClaw, Hermes, and other harnesses:
+
+```bash
+# user scope — every project
+./product-planning/bin/install.sh --user
+
+# project scope — this repo only
+./product-planning/bin/install.sh --project
+
+# pick harnesses
+./product-planning/bin/install.sh --user --harness claude,cursor,agents whereto
+```
+
+See [product-planning/whereto/INSTALL.md](product-planning/whereto/INSTALL.md) for the full IDE matrix and manual paths.
 
 `impact-driven-writing/` is a local folder of writing-focused skills, indexed
 below. It also carries a small `npx` installer (`bin/install.js`) for
@@ -159,8 +180,11 @@ support. Entry point `/gstack-game` routes to the right sub-skill; run
 
 ### product-planning/
 
+Portable planning skills — [agentskills.io](https://agentskills.io) format, multi-IDE install via `product-planning/bin/install.sh`.
+
 | Skill | Source | Purpose |
 |-------|--------|---------|
+| `whereto` | local | Project phase analysis — evidence-scored placement, roadmap, scored next slice, implementation handoff (`PROJECT_PHASE.md` + `IMPLEMENTATION_HANDOFF.md`) for Game/APP/WEB projects. [Install guide](product-planning/whereto/INSTALL.md) |
 | `prd` | [github/awesome-copilot](https://github.com/github/awesome-copilot) | Product Requirements Documents |
 
 ### git/

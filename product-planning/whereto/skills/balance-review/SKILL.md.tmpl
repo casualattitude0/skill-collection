@@ -1,0 +1,286 @@
+---
+bundled_into: whereto
+name: balance-review
+description: "Use when a game has numbers that need checking — difficulty curves, currency flow, gacha rates, progression pacing, grind ratios, or pay-to-win concerns. Not for visual design, narrative, core loop evaluation (use /game-review), or player experience walkthrough (use /player-experience)."
+user_invocable: true
+preamble-tier: 2
+---
+<!-- Bundled into whereto from gstack-game; edit this file directly (no outer build step). -->
+{{PREAMBLE}}
+
+## Load References (BEFORE any interaction)
+
+```bash
+SKILL_DIR="$(find . -path '*whereto/skills/balance-review/references' -type d 2>/dev/null | head -1)"
+[ -z "$SKILL_DIR" ] && SKILL_DIR="$(find . -path '*/skills/balance-review/references' -type d 2>/dev/null | head -1)"
+# Prefer pack-relative path when this skill lives under product-planning/whereto/skills/balance-review
+[ -d "references" ] && SKILL_DIR="references"
+echo "References at: $SKILL_DIR"
+ls "$SKILL_DIR/" 2>/dev/null
+```
+
+Read ALL reference files now. Do not proceed until you have read every file:
+- `references/gotchas.md` — Claude-specific mistakes and anti-sycophancy protocol
+- `references/scoring.md` — all scoring rubrics (explicit formulas, never use AI intuition)
+- `references/difficulty-curve.md` — Section 1 analysis framework
+- `references/economy-model.md` — Section 2 analysis framework
+- `references/progression.md` — Section 3 analysis framework
+- `references/monetization.md` — Section 4 analysis framework
+- `references/character-balance.md` — Section 5 analysis framework
+- `references/cross-section.md` — Section 6 cross-check table
+
+## Artifact Discovery
+
+```bash
+setopt +o nomatch 2>/dev/null || true  # zsh compat
+SLUG=$(basename "$(git rev-parse --show-toplevel 2>/dev/null || pwd)")
+BDOC=$(ls -t docs/*balance* docs/*economy* docs/*progression* docs/*difficulty* design/gdd/*economy* design/gdd/*balance* assets/data/*curve* 2>/dev/null | head -1)
+[ -z "$BDOC" ] && BDOC=$(ls -t "$ART"/*-balance-*.md "$ART"/*-economy-*.md 2>/dev/null | head -1)
+GDD=$(ls -t docs/*GDD* docs/*game-design* docs/*design-doc* *.gdd.md 2>/dev/null | head -1)
+[ -z "$GDD" ] && GDD=$(ls -t "$ART"/*-design-*.md 2>/dev/null | head -1)
+PREV_REVIEW=$(ls -t "$ART"/*-balance-report-*.md 2>/dev/null | head -1)
+[ -n "$BDOC" ] && echo "Balance doc: $BDOC"
+[ -n "$GDD" ] && echo "GDD: $GDD"
+[ -n "$PREV_REVIEW" ] && echo "Previous balance review: $PREV_REVIEW"
+echo "---"
+[ -z "$BDOC" ] && [ -z "$GDD" ] && echo "No balance doc or GDD found — will review from user description"
+```
+
+If a previous balance review exists, read it. Note what was found last time — check if those issues are still present.
+
+---
+
+# /balance-review: Game Economy & Balance Review
+
+You are an **economy mathematician**. You review NUMBERS, not feelings. Every finding must reference a specific value, ratio, or curve. If the data doesn't exist yet, the finding is "you don't have data for X — here's how to get it."
+
+---
+
+## Phase 0: Context & Mode Selection
+
+Read the GDD and any balance/economy docs found. Then confirm context via AskUserQuestion:
+
+> **[Re-ground]** Starting balance review for `[game title]` on `[branch]`.
+>
+> I need to calibrate this review. Here's what I found and what I need:
+>
+> | Context | Found | Need |
+> |---------|-------|------|
+> | Game type | {found or "?"} | {needed if missing} |
+> | Monetization | {found or "?"} | {needed if missing} |
+> | Available data | {what exists} | |
+> | Dev stage | {found or "?"} | |
+>
+> **Most important: What data do you have?**
+> A) **Spreadsheet with formulas** — deepest review, I verify the math
+> B) **Simulation output or graphs** — I analyze curves and trends
+> C) **Playtest data** — gold standard, I focus on what data reveals
+> D) **GDD / design doc only** — theoretical review, I flag what needs testing
+> E) **Nothing yet** — I tell you what to build and what numbers to track
+>
+> RECOMMENDATION: Choose honestly. A theoretical review (D) is useful but different from a data review (A-C).
+
+**STOP.** Wait for answer.
+
+### Mode Selection
+
+**AskUserQuestion:**
+
+> Based on your game type and monetization, which review mode?
+>
+> RECOMMENDATION: {Based on context — RPG+F2P → A, Platformer+Premium → B, etc.}
+>
+> A) **F2P Mobile** — all 6 sections, monetization weighted heavily
+> B) **Premium** — skip monetization (Section 4). Focus on difficulty + progression
+> C) **Competitive/PvP** — character balance is primary (Section 5). Others as needed
+> D) **Live Service** — all sections with real data emphasis
+>
+> Player Impact: Mode determines which numbers I scrutinize and which I skip.
+
+**STOP.** Wait for mode selection. Lock mode — do not change after this point.
+
+### Section Skip Rules
+
+| Mode | Section 1 | Section 2 | Section 3 | Section 4 | Section 5 | Section 6 |
+|------|-----------|-----------|-----------|-----------|-----------|-----------|
+| A: F2P | ✅ | ✅ | ✅ | ✅ | if PvP | ✅ |
+| B: Premium | ✅ | ✅ | ✅ | SKIP | if PvP | ✅ |
+| C: Competitive | ✅ | as needed | as needed | 4A+4B only | ✅ | ✅ |
+| D: Live Service | ✅ | ✅ | ✅ | ✅ | if PvP | ✅ |
+
+---
+
+## Review Execution
+
+For each active section, apply the analysis framework from the corresponding reference file and score using the rubric from `references/scoring.md`.
+
+### Section 1: Difficulty Curve
+Apply `references/difficulty-curve.md`. Score using `references/scoring.md` Section 1 rubric.
+
+**STOP.** Present findings via AskUserQuestion. One issue at a time. Proceed only after all issues resolved or deferred. Then present section score and transition (see Section Transitions below).
+
+### Section 2: Economy Model
+Apply `references/economy-model.md`. Score using `references/scoring.md` Section 2 rubric.
+
+**STOP.** One issue at a time. Then section score + transition.
+
+### Section 3: Progression Pacing
+Apply `references/progression.md`. Score using `references/scoring.md` Section 3 rubric.
+
+**STOP.** One issue at a time. Then section score + transition.
+
+### Section 4: Monetization Pressure
+Apply `references/monetization.md`. Score using `references/scoring.md` Section 4 rubric.
+
+**STOP.** One issue at a time. Then section score + transition.
+
+### Section 5: Character/Unit Balance
+Apply `references/character-balance.md`. Score using `references/scoring.md` Section 5 rubric.
+
+**STOP.** One issue at a time. Then section score + transition.
+
+### Section 6: Cross-Section Consistency
+Apply `references/cross-section.md`. For each conflict found, present as one AskUserQuestion.
+
+**STOP.** One conflict at a time.
+
+---
+
+## Forcing Questions
+
+After all sections complete, apply the forcing questions from `references/gotchas.md`. Smart-route based on data level and mode (see routing table in gotchas.md). Minimum 2 questions.
+
+**STOP** after each forcing question. Wait for answer.
+
+---
+
+## Section Transitions
+
+After completing EACH section, present score and ask:
+
+> **Section {N} — {name}: {score}/10**
+> Key finding: {1-sentence summary with specific numbers}
+>
+> A) **Continue to Section {N+1}** — {next section name}
+> B) **Dig deeper** — ask about a specific number or ratio in this section
+> C) **Fast-forward** — skip to score summary (remaining sections scored with AUTO only)
+> D) **Stop here** — save progress
+
+If user chooses C: Complete remaining sections with AUTO-only (flag issues, don't ask). Present full score summary.
+
+**STOP.** Wait for answer after every section.
+
+---
+
+## Action Triage
+
+### AUTO (do without asking)
+- Math errors in economy tables
+- Missing sink for a documented faucet (or vice versa)
+- Duplicate reward entries, inconsistent currency names
+- Scoring calculation errors
+
+### ASK (present via AskUserQuestion, one at a time)
+- Pacing changes, monetization adjustments, difficulty reshaping
+- Adding/removing currencies, changing reward schedules
+- Adjusting pity thresholds, grind ratio improvements
+
+### ESCALATE (stop and report — do not suggest a fix)
+- Economy has **no sinks** (guaranteed hyperinflation)
+- Core progression is **pay-gated**
+- **No fail-state recovery** exists
+- Difficulty spike + monetization prompt at same point
+- Probabilistic reward with **no pity system** and real money involved
+- Faucet/sink ratio > 2.0 or < 0.5
+- Character with > 60% win rate and no planned nerf
+- 3+ consecutive findings where user says "we'll fix it later"
+
+---
+
+## Important Rules
+
+- **Numbers, not feelings.** Every finding references a specific value, ratio, or curve.
+- **ONE issue per AskUserQuestion.** Don't batch findings.
+- **Section transitions mandatory.** Score + key finding + ask before continuing.
+- **Escape hatch for missing data:** Switch to structural review (categories, not values).
+- **AI confidence disclaimer:** All benchmarks are industry heuristics. "Calibrate with YOUR playtest data."
+- **Respect fast-forward on first request.** Economy deep-dives can be exhausting.
+- **Never design the economy.** "Your sink rate is too low" = review. "Add a repair cost of 50 gold per death" = design. Design belongs to the designer.
+
+---
+
+## Completion Summary
+
+```
+Balance Health Report
+═══════════════════════════════════════════════════
+
+Game: [game name]
+Mode: [A/B/C/D]
+Data Source: [spreadsheet / simulation / playtest / design doc only]
+Development Stage: [pre-production / production / live]
+
+Section Scores (from references/scoring.md):
+  Difficulty Curve:        _/10  (weight: 25%)
+  Economy Model:           _/10  (weight: 25%)
+  Progression Pacing:      _/10  (weight: 20%)
+  Monetization Pressure:   _/10  (weight: 20%)  [N/A if Mode B]
+  Character Balance:       _/10  (weight: 10%)  [N/A if no PvP]
+  ──────────────────────────────────────────────
+  WEIGHTED TOTAL:          _/10
+
+Cross-Section Conflicts:   ___ found
+Unresolved Issues:         ___
+Escalated Issues:          ___
+
+Top 3 Priorities:
+  1. [highest impact with specific numbers]
+  2. [second]
+  3. [third]
+
+Data Gaps:
+  - [what data would improve this review]
+
+⚠️ AI Confidence: 70%
+   Benchmarks are industry heuristics. Calibrate with YOUR playtest data.
+
+Next Steps:
+  - [specific actions]
+
+Next Step:
+  PRIMARY: /prototype-slice-plan — economy reviewed, plan what to build
+  (if GDD changes needed from balance fixes): /game-review — re-review design after economy updates
+═══════════════════════════════════════════════════
+```
+
+## Baseline → Final Re-score (if economy docs were updated during review)
+
+If the user updated economy numbers during this session (fixing issues you flagged):
+
+1. **Baseline** = first pass scores (recorded at each section completion)
+2. **Re-read** the updated sections and re-score ONLY changed sections
+3. **Present delta:**
+
+```
+Score Delta:
+  Section            Baseline    Final    Change
+  Difficulty Curve:  _/10        _/10     +_
+  Economy Model:     _/10        _/10     +_
+  Progression:       _/10        _/10     +_
+  Monetization:      _/10        _/10     +_
+  Character Balance: _/10        _/10     +_
+  WEIGHTED TOTAL:    _._/10      _._/10   +_._
+```
+
+**⚠️ If final < baseline: WARN prominently** — a fix may have introduced a new problem (e.g., adding a sink that's too aggressive, or adjusting a pity threshold that makes another system unbalanced).
+
+## Save Artifact
+
+```bash
+SLUG=$(basename "$(git rev-parse --show-toplevel 2>/dev/null || pwd)")
+if [ -d docs ]; then ART=docs/whereto-artifacts; else ART=whereto-artifacts; fi
+mkdir -p "$ART"
+```
+
+Write the Balance Health Report (including baseline → final delta if applicable) to `{docs/whereto-artifacts or whereto-artifacts}/{user}-{branch}-balance-report-{datetime}.md`. This artifact is discoverable by downstream skills and future balance reviews.
+
