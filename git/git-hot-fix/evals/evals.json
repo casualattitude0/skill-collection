@@ -1,0 +1,23 @@
+{
+  "skill_name": "git-hot-fix",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Prod is on fire — the checkout page throws a null error for guest users and we're losing sales. There's a fix ready: in src/checkout.js, guard `user.email` with `user?.email`. We use a main + develop branch setup. Ship it to production now and make sure develop gets it too so it doesn't come back next release.",
+      "expected_output": "Detects git-flow, branches hotfix off main, applies the one-line fix, opens+merges PRs into BOTH main and develop (main first), and reports both PR numbers. Should surface the develop merge-back explicitly.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "We just deployed and there's a critical bug: the API returns 500 on the /health endpoint because of a typo in server.py (`retrun` should be `return`). This repo is trunk-based, just main, and we tag releases like v2.3.1. Fix it in prod and cut a patched version.",
+      "expected_output": "Detects github-flow (main only), branches hotfix off main, fixes the typo, merges PR into main, and because the repo tags releases (semverTags>0, version found), bumps the patch version and creates+pushes a vX.Y.Z tag. Reports the new tag.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "There's a bug where the settings page has a misaligned button on mobile — the padding is off by a few pixels. It's annoying but not breaking anything. Can you hotfix this? We're on main + develop.",
+      "expected_output": "Recognizes this is NOT urgent/production-critical (cosmetic, can wait for next release), pushes back that it should be a normal branch + PR rather than an off-cycle hotfix, and offers to do that instead (or defer to github-pr-workflow) rather than running the full hotfix fan-out.",
+      "files": []
+    }
+  ]
+}
