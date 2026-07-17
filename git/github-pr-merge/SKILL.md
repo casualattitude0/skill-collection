@@ -76,6 +76,15 @@ Creates a merge commit on the target branch ("Merge pull request #N from
 `<head>`") and deletes the source branch — the source branch joins back into
 the target instead of running parallel to it. Override with
 `--method squash|rebase` or keep the branch with `--no-delete-branch`.
+
+**Protected source branches are never deleted.** If the source (`<head>`) is a
+long-lived branch — `main`, `master`, `develop`/`dev`, `release`/`release/*`,
+`staging`, `production`, `hotfix/*`, etc. — the driver merges but skips
+`--delete-branch` and prints a `note:` to stderr. So merging `develop → main`
+leaves `develop` intact. Extend the list with
+`GH_PR_PROTECTED="qa,sandbox"` (names or path prefixes). The `merge` output
+reports what happened: `{"branchDeleted":false,"head":"develop",...}`.
+
 Confirm:
 
 ```bash
@@ -87,7 +96,7 @@ node driver.mjs status <pr-number>   # -> {"state":"MERGED","merged":true,...}
 | Command | What it does |
 |---|---|
 | `open --head <b> --base <b> [--title T] [--body B] [--draft]` | Push head, open PR, print `{number,url,...}` |
-| `merge <pr> [--method merge\|squash\|rebase] [--no-delete-branch]` | Merge into target (default: merge commit) + delete branch |
+| `merge <pr> [--method merge\|squash\|rebase] [--no-delete-branch]` | Merge into target (default: merge commit) + delete branch (protected source branches are kept) |
 | `status <pr>` | Print `{state,mergeable,merged,base,head}` |
 
 ## Gotchas
@@ -106,6 +115,13 @@ node driver.mjs status <pr-number>   # -> {"state":"MERGED","merged":true,...}
   request #N from `<head>`"). `squash`/`rebase` replay the commits onto the
   base, which reads as a parallel/divergent branch rather than a merge —
   only pass `--method squash|rebase` when you explicitly want that.
+- **Protected source branches survive the merge.** `--delete-branch` is on by
+  default, but the driver first reads the PR's `headRefName` and skips the
+  delete when it matches a long-lived branch (`main`, `master`, `dev`,
+  `develop`, `release`/`release/*`, `staging`, `production`, `hotfix/*`, …).
+  This stops `develop → main` from wiping out `develop`. Matching is
+  case-insensitive on the first path segment, so `Release/2.0` is covered too.
+  Add your own with `GH_PR_PROTECTED="qa,sandbox"`.
 - **`merge` is irreversible.** A merge can't be cleanly undone, and there is
   no review gate in this skill — only run it when you already know the change
   is good. Test loops should target a throwaway base branch, never `main`

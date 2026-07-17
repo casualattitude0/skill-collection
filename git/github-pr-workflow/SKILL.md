@@ -97,6 +97,15 @@ Creates a merge commit on the target branch ("Merge pull request #N from
 `<head>`") and deletes the source branch — the source branch joins back into
 the target instead of running parallel to it. Override with
 `--method squash|rebase` or keep the branch with `--no-delete-branch`.
+
+**Protected source branches are never deleted.** If the source (`<head>`) is a
+long-lived branch — `main`, `master`, `develop`/`dev`, `release`/`release/*`,
+`staging`, `production`, `hotfix/*`, etc. — `pass` merges but skips
+`--delete-branch` and prints a `note:` to stderr, so merging `develop → main`
+leaves `develop` intact. Extend the list with `GH_PR_PROTECTED="qa,sandbox"`
+(names or path prefixes). The output reports it:
+`{"branchDeleted":false,"head":"develop",...}`.
+
 Confirm:
 
 ```bash
@@ -131,7 +140,7 @@ git checkout -   # back to where you were
 |---|---|
 | `open --head <b> --base <b> [--title T] [--body B] [--draft]` | Push head, open PR, print `{number,url,...}` |
 | `context <pr>` | Print title + body + files + diff for the reviewer |
-| `pass <pr> [--method merge\|squash\|rebase] [--no-delete-branch]` | Merge into target (default: merge commit) + delete branch |
+| `pass <pr> [--method merge\|squash\|rebase] [--no-delete-branch]` | Merge into target (default: merge commit) + delete branch (protected source branches are kept) |
 | `fail <pr> --reason <text>` | Post a "Failed" review comment |
 | `push <branch>` | Push `<branch>` to origin as the pinned account (fix loop) |
 | `status <pr>` | Print `{state,mergeable,merged,base,head}` |
@@ -158,6 +167,13 @@ git checkout -   # back to where you were
   request #N from `<head>`"). `squash`/`rebase` replay the commits onto the
   base, which reads as a parallel/divergent branch rather than a merge —
   only pass `--method squash|rebase` when you explicitly want that.
+- **Protected source branches survive the merge.** `--delete-branch` is on by
+  default, but `pass` first reads the PR's `headRefName` and skips the delete
+  when it matches a long-lived branch (`main`, `master`, `dev`, `develop`,
+  `release`/`release/*`, `staging`, `production`, `hotfix/*`, …). This stops
+  `develop → main` from wiping out `develop`. Matching is case-insensitive on
+  the first path segment, so `Release/2.0` is covered too. Add your own with
+  `GH_PR_PROTECTED="qa,sandbox"`.
 - **`pass` is irreversible.** A merge can't be cleanly undone. Only call it
   after a `Pass` verdict. Test loops should target a throwaway base branch,
   never `main` directly.
