@@ -35,6 +35,29 @@ import { execFileSync } from "node:child_process";
 // Account #1 from `gh auth status` — the identity that drives every PR here.
 const ACCOUNT = process.env.GH_PR_ACCOUNT || "casualattitude0";
 
+// Long-lived branches that must never be auto-deleted when they're the source
+// of a merged PR. A merge back into the target should not remove the branch
+// you merged *from* if it's a shared trunk/integration/release line. Matched
+// case-insensitively against the exact branch name or a leading path segment
+// (e.g. `release`, `release/1.2`, `hotfix/x`). Extend with GH_PR_PROTECTED
+// (comma/space-separated names or prefixes).
+const PROTECTED = [
+  "main", "master", "trunk", "default",
+  "dev", "develop", "development",
+  "release", "releases", "stable",
+  "staging", "stage", "preprod", "pre-production",
+  "prod", "production",
+  "hotfix", "support", "next", "canary", "integration",
+  ...(process.env.GH_PR_PROTECTED || "").split(/[,\s]+/).filter(Boolean),
+];
+
+// True if `name` is (or lives under) a protected long-lived branch.
+function isProtectedBranch(name) {
+  if (!name) return false;
+  const first = String(name).toLowerCase().split("/")[0];
+  return PROTECTED.map((p) => p.toLowerCase()).includes(first);
+}
+
 function gh(args, { json = false, input } = {}) {
   try {
     const out = execFileSync("gh", args, {
@@ -150,10 +173,20 @@ switch (cmd) {
     const method = opt.method || "merge";
     const flag = { squash: "--squash", merge: "--merge", rebase: "--rebase" }[method];
     if (!flag) die(`unknown --method ${method}`);
+    // Look up the source branch so we never delete a protected trunk/release
+    // line, even when --delete-branch is the default.
+    const head = gh(["pr", "view", pr, "--json", "headRefName", "--jq", ".headRefName"]).trim();
+    const protectedHead = isProtectedBranch(head);
+    const deleteBranch = !opt["no-delete-branch"] && !protectedHead;
     const args = ["pr", "merge", pr, flag];
-    if (!opt["no-delete-branch"]) args.push("--delete-branch");
+    if (deleteBranch) args.push("--delete-branch");
     gh(args);
-    console.log(JSON.stringify({ number: Number(pr), merged: true, method }));
+    if (protectedHead && !opt["no-delete-branch"]) {
+      console.error(`note: kept protected source branch "${head}" (not deleted).`);
+    }
+    console.log(JSON.stringify({
+      number: Number(pr), merged: true, method, head, branchDeleted: deleteBranch,
+    }));
     break;
   }
 
