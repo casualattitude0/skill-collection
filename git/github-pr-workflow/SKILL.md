@@ -1,6 +1,6 @@
 ---
 name: github-pr-workflow
-description: Open a GitHub pull request from a source branch into a target branch, send it to a review sub-agent that returns Pass/Failed, then merge on Pass or comment-and-fix on Failed. Use when asked to open a PR, review a PR with an agent, auto-merge a PR, run a PR review loop, or "create and merge a PR from branch X into branch Y".
+description: Open a GitHub pull request from a source branch into a target branch, send it to a review sub-agent that returns Pass/Failed, then merge on Pass or post a rejection review (event=COMMENT under the "Reviews" section) and fix on Failed. Use when asked to open a PR, review a PR with an agent, auto-merge a PR, run a PR review loop, have the reviewer leave a rejection comment on GitHub, or "create and merge a PR from branch X into branch Y".
 license: MIT
 metadata:
   author: skill-collection
@@ -15,8 +15,9 @@ Drives a full PR review loop with the `gh` CLI:
 2. **Review** the PR with a Claude sub-agent → `Pass` / `Failed`.
 3. **Pass** → merge into the target branch (a "Merge pull request #N from
    <head>" commit) and delete the branch (PR closes on merge).
-4. **Failed** → post a comment with the failure reasons, fix them on the
-   source branch, push, and re-review until it passes.
+4. **Failed** → submit a **rejection review** on GitHub (a formal PR review
+   with the failure reasons, shown under the "Reviews" section), fix them on
+   the source branch, push, and re-review until it passes.
 
 The default merge method is a real **merge commit** so the source branch
 joins back into the target branch. Do **not** default to `squash`/`rebase` —
@@ -112,13 +113,25 @@ Confirm:
 node driver.mjs status <pr-number>   # -> {"state":"MERGED","merged":true,...}
 ```
 
-### 3b. Failed → comment, fix, re-review
+### 3b. Failed → reject with a review, fix, re-review
 
-Post the reasons (the sub-agent's explanation) as a PR comment:
+Post the reasons (the sub-agent's explanation) as a **formal PR review** — it
+lands under the "Reviews" section on GitHub, not as a loose conversation
+comment:
 
 ```bash
 node driver.mjs fail <pr-number> --reason "sandbox_add.js:2 — returns a - b, should be a + b."
 ```
+
+The review is submitted with `event=COMMENT` (via `gh pr review --comment`).
+That is deliberate: this workflow runs the whole PR — open, review, merge — as
+**one GitHub account**, and GitHub returns a 422 error if you try to *Approve*
+or *Request changes* on **your own** PR. `COMMENT` is the only review event
+allowed on a self-authored PR, so it is what "rejecting" looks like here. To
+get a true **"Changes requested"** status (the red rejection that can block
+merge), the review has to come from a *different* account — run the `fail`
+step with `GH_PR_ACCOUNT=<reviewer>` set to a second authenticated `gh`
+account, and swap `--comment` for `--request-changes` in `driver.mjs`.
 
 Then apply the fix on the **source branch**, push, and loop back to step 2
 (`context` → sub-agent → `pass`/`fail`). Push through the driver so the fix
@@ -141,7 +154,7 @@ git checkout -   # back to where you were
 | `open --head <b> --base <b> [--title T] [--body B] [--draft]` | Push head, open PR, print `{number,url,...}` |
 | `context <pr>` | Print title + body + files + diff for the reviewer |
 | `pass <pr> [--method merge\|squash\|rebase] [--no-delete-branch]` | Merge into target (default: merge commit) + delete branch (protected source branches are kept) |
-| `fail <pr> --reason <text>` | Post a "Failed" review comment |
+| `fail <pr> --reason <text>` | Submit a rejection review (event=COMMENT) with the failure reasons — appears under "Reviews" |
 | `push <branch>` | Push `<branch>` to origin as the pinned account (fix loop) |
 | `status <pr>` | Print `{state,mergeable,merged,base,head}` |
 
@@ -160,6 +173,12 @@ git checkout -   # back to where you were
   created by that one account — not by whatever the SSH key resolves to. This
   is what keeps the whole PR process on a single identity. If the branch
   already exists upstream the push is a no-op and the PR still opens.
+- **A rejection is a review, not a `--request-changes`.** `fail` submits a
+  formal PR review with `event=COMMENT`. Because open/review/merge all run as
+  one account, `gh pr review --request-changes` (and `--approve`) would 422
+  with "Can not request changes on your own pull request." COMMENT is the only
+  review event GitHub permits on a self-authored PR. A second reviewer account
+  is required for a true "Changes requested" state — see step 3b.
 - **Review the *latest* diff.** After pushing a fix, re-run `context` before
   re-reviewing — `gh pr diff` reflects the new commits immediately.
 - **Default method is `merge` (a merge commit), not `squash`.** A merge
@@ -193,7 +212,8 @@ git checkout -   # back to where you were
 
 This skill was exercised against a sandbox base branch (not `main`):
 `open` (PR #1, source→base) → `context` → sub-agent returned **Failed** on a
-seeded `a - b` bug → `fail` posted the comment → fix pushed → `context`
+seeded `a - b` bug → `fail` submitted a rejection review (event=COMMENT,
+visible under "Reviews") → fix pushed → `context`
 re-fetched → sub-agent returned **Pass** → `pass` merged into the base and
 deleted the branch → `status` reported `MERGED`. Sandbox branches were then
 deleted.

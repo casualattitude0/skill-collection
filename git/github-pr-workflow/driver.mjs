@@ -18,7 +18,10 @@
 //         Push <branch> to origin as ACCOUNT (used by the fix loop after a
 //         Failed verdict, so the fix commits land under the same identity).
 //   fail  <pr> --reason <text>
-//         Post a review comment with the failure reasons (requests changes).
+//         Submit a formal PR review (event=COMMENT) with the failure reasons,
+//         so the rejection lands under the "Reviews" section. COMMENT rather
+//         than "request changes" because the whole flow runs as one account
+//         and GitHub forbids Approve/Request-changes on your own PR.
 //   status <pr>
 //         Print JSON {number,state,mergeable,merged,base,head}.
 //
@@ -202,10 +205,16 @@ switch (cmd) {
     const pr = pos[0];
     const reason = opt.reason;
     if (!pr || !reason) die("fail requires <pr> --reason <text>");
-    const body = `## ❌ Automated review: Failed\n\n${reason}\n\n` +
+    const body = `## ❌ Automated review: Changes requested\n\n${reason}\n\n` +
       `_Pushed fixes will appear as new commits on this PR._`;
-    gh(["pr", "comment", pr, "--body", body]);
-    console.log(JSON.stringify({ number: Number(pr), commented: true }));
+    // Submit as a formal PR review (event=COMMENT) so the rejection shows up
+    // under the "Reviews" section rather than as a loose conversation comment.
+    // COMMENT is used instead of --request-changes because the whole flow runs
+    // as a single account, and GitHub returns 422 for Approve/Request-changes
+    // on your own PR. To get a true "Changes requested" state, run the review
+    // step under a second account (see SKILL.md).
+    gh(["pr", "review", pr, "--comment", "--body", body]);
+    console.log(JSON.stringify({ number: Number(pr), reviewed: "commented" }));
     break;
   }
 
