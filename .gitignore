@@ -10,3 +10,6 @@ career/targeted-cv-generator/
 # eval workspace (fixtures have nested .git)
 product-planning/whereto-workspace/
 git/git-hot-fix-workspace/
+
+# graphify generated output/cache
+graphify-out/
