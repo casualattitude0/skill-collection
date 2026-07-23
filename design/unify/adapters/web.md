@@ -258,7 +258,7 @@ reduce it below the breakpoint minimum.
 
 | Principle | Native web mechanism |
 |---|---|
-| **P1 · Edge safety** | Layout only through `.u-container` (padding-inline = gutter token). Stylelint `declaration-property-value-disallowed-list` on `padding: 0` for containers; grep for components that set `padding: 0` or negative margins on layout wrappers. Visual: axe/Playwright assert no child bounding box touches container edge. |
+| **P1 · Edge safety** | **Container edge:** layout only through `.u-container` (padding-inline = gutter token); Stylelint `declaration-property-value-disallowed-list` on `padding: 0` for containers; grep components that set `padding: 0` / negative margins on layout wrappers. **Internal divider:** any `<hr>`, `.divider`, or element with `border-top`/`border-bottom` must keep ≥ `space-3` (12px) padding/margin on the content on **each** side — Stylelint flags a `border-bottom`/`.divider` row whose block padding is `0` or `< var(--space-3)`; grep `border-(top\|bottom)`/`.divider` blocks lacking `padding: var(--space-3…9)`. **Rounded corner:** a `border-radius` container must inset children ≥ `r` (`padding ≥ var(--radius-*)`) so the curve never clips them — grep `border-radius` wrappers whose direct children set `padding: 0`. Grep is approximate: whether a label actually sits *on* a rule, or toolbar/traffic-light content is clipped by a specific corner, is a **visual reviewer / Playwright bounding-box check** — assert no child box lands within `space-3` of a rule or within `r` of a rounded corner. |
 | **P2 · Grid alignment** | Stylelint `declaration-property-value-allowed-list` restricting `margin`/`padding`/`gap`/`top`/`left`/`width`/`height` to `var(--space-*)` / `var(--radius-*)`. Reject any raw `px` via regex `\b\d+px\b` in component CSS (see audit row 6). |
 | **P3 · One direction / surface** | ESLint: pages must render a `<Template*>` root — custom rule / `no-restricted-syntax` forbidding raw `<div>` layout roots in `pages/**` and `app/**/page.tsx`. Grep pages for absence of `Template` import. |
 | **P4 · Token-only** | Stylelint `color-no-hex` + `declaration-property-value-disallowed-list` (no raw hex, no raw `font-size`). ESLint `no-restricted-syntax` on JSX `style={{…}}` with literal px/hex. Grep `#[0-9a-fA-F]{3,6}` in `components/**`. |
@@ -412,8 +412,17 @@ Layer 5 checklist → concrete web checks. Run against `components/**` and `src/
 globs). Each is designed to be a FAIL gate.
 
 ```bash
-# 1 · P1 — containers/layout wrappers that kill their edge-safety padding
+# 1 · P1 — edge safety: container edge, internal divider, AND rounded corner
+# (a) container/layout wrappers that kill their edge-safety padding
 grep -rniE 'padding(-inline)?\s*:\s*0(px|;| )|margin(-inline)?\s*:\s*-' components/ src/
+# (b) divider rows — <hr>, .divider, or border-top/bottom lacking ≥12px padding each side
+grep -rniE 'border-(top|bottom)\s*:|\.divider\b|<hr\b' components/ src/ \
+  | grep -vE 'padding[^;]*var\(--space-[3-9]'   # flag rules whose block lacks ≥ space-3 padding
+# (c) rounded-corner containers whose children may lack corner inset ≥ r (candidates)
+grep -rniE 'border-radius\s*:\s*var\(--radius-[23]' components/ src/
+# NOTE: (b) and (c) only surface CANDIDATES. Whether a label actually sits ON its rule, or
+# content is clipped by the corner curve, needs a VISUAL reviewer / Playwright bounding-box
+# assertion (no child box within space-3 of a rule, nor within r of a rounded corner).
 
 # 2 · P2 — arbitrary offsets: raw px anywhere in component CSS (must be var(--space-*))
 grep -rnE '\b[0-9]+px\b' components/ src/**/*.css \

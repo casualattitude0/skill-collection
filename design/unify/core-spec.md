@@ -10,9 +10,17 @@ non-negotiable rules down to the audit that enforces them.
 
 Each is written so a reviewer or agent can return PASS/FAIL. These override taste.
 
-- **P1 · Edge safety.** No element sits flush to a container boundary. Every container's
-  inner padding ≥ the gutter token for its breakpoint. Content lives inside the frame,
-  never on it.
+- **P1 · Edge safety (no content *on a line*).** Content is never flush to, nor bisected
+  by, **any** line — the outer container edge, a rounded-corner curve, **or an internal
+  divider/separator**. Required clearances:
+  - **Straight edge / border:** inner padding ≥ the breakpoint gutter (Layer 2).
+  - **Internal divider or separator:** ≥ `space-3` (12) between the rule and the content
+    on **each** side. The rule may be full-bleed, but the content beside it keeps its gap —
+    a label must never sit *on* its divider.
+  - **Rounded corner (radius `r`):** content is inset ≥ `r` from the corner so the curve
+    never clips it (corner-safe inset). Toolbar/traffic-light content near a rounded window
+    edge respects this.
+  Content lives inside the frame, never on it — and never gets sliced by a rule.
 - **P2 · Grid alignment.** Every box edge lands on the 4px base unit. Positions and sizes
   are token multiples — never eyeballed offsets.
 - **P3 · One direction per surface.** A page = `template + tokens`. No bespoke page
@@ -192,7 +200,9 @@ regions. No region is placed with arbitrary coordinates.
 Each row returns **PASS / FAIL** with file:line and the fix. `audit` mode runs all rows;
 `generate` self-checks against them before returning.
 
-1. **P1** — No element flush to a container edge; every container padding ≥ its gutter.
+1. **P1** — No element flush to, or bisected by, **any** line: container edge (padding ≥
+   gutter), internal divider/separator (≥ `space-3` clear on each side), or rounded corner
+   (content inset ≥ radius). A label sitting *on* its divider is a FAIL.
 2. **P2** — Every box edge on the 4px unit; no arbitrary offsets.
 3. **P3** — Page is built from a named template, not hand-placed.
 4. **P4** — Zero raw px/hex/color/font-size literals in components.
