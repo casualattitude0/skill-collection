@@ -337,8 +337,9 @@ effect next Claude Code session either way.
 row back and re-running `sync.sh` restores it.
 
 **Activation is not free.** Every enabled skill's frontmatter loads on every
-turn. As of 2026-07-30, **62 of 115 are enabled, costing ~6.4k tokens** — down
-from 111 enabled at ~10.9k, after disabling the Go, Flutter, and Vue stacks
+turn. As of 2026-07-30, **61 of the manifest's 115 rows are enabled, costing
+~6.4k tokens** (62 skills load in total — the extra is unmanaged
+`find-skills`) — down from ~10.9k, after disabling the Go, Flutter, and Vue stacks
 (idle), the 22 career skills, and five redundant skills. Re-enable a stack when
 you next work in it.
 
