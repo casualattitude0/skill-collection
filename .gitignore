@@ -1,0 +1,11 @@
+.DS_Store
+node_modules/
+*.tgz
+.env
+
+# scratch/personal skills not yet triaged into this repo
+local-skills/
+
+# eval workspace (fixtures have nested .git)
+casualattitude0-skill-collection/whereto-workspace/
+casualattitude0-skill-collection/git-hot-fix-workspace/
