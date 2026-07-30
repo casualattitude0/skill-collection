@@ -9,7 +9,7 @@
     },
     {
       "name": "avoid-ai-writing",
-      "source": "impact-driven-writing/skills/avoid-ai-writing",
+      "source": "conorbronsdon-avoid-ai-writing/avoid-ai-writing",
       "mode": "copy"
     },
     {
@@ -29,17 +29,17 @@
     },
     {
       "name": "codebase-design",
-      "source": "engineering/codebase-design",
+      "source": "mattpocock-skills/codebase-design",
       "mode": "copy"
     },
     {
       "name": "diagnosing-bugs",
-      "source": "engineering/diagnosing-bugs",
+      "source": "mattpocock-skills/diagnosing-bugs",
       "mode": "copy"
     },
     {
       "name": "domain-modeling",
-      "source": "engineering/domain-modeling",
+      "source": "mattpocock-skills/domain-modeling",
       "mode": "copy"
     },
     {
@@ -149,12 +149,12 @@
     },
     {
       "name": "prd",
-      "source": "product-planning/prd",
+      "source": "github-awesome-copilot/prd",
       "mode": "copy"
     },
     {
       "name": "prototype",
-      "source": "engineering/prototype",
+      "source": "mattpocock-skills/prototype",
       "mode": "copy"
     },
     {
@@ -169,7 +169,7 @@
     },
     {
       "name": "tdd",
-      "source": "engineering/tdd",
+      "source": "mattpocock-skills/tdd",
       "mode": "copy"
     },
     {
@@ -179,7 +179,7 @@
     },
     {
       "name": "typeui-fundamentals",
-      "source": "design/typeui-fundamentals",
+      "source": "bergside-typeui/typeui-fundamentals",
       "mode": "copy"
     },
     {

@@ -1,0 +1,29 @@
+name: check-whereto-bundle
+
+on:
+  push:
+    paths:
+      - "casualattitude0-skill-collection/whereto/**"
+      - "mattpocock-skills/**"
+      - "bergside-typeui/**"
+      - "conorbronsdon-avoid-ai-writing/**"
+      - "github-awesome-copilot/prd/**"
+      - ".github/workflows/check-bundle.yml"
+  pull_request:
+    paths:
+      - "casualattitude0-skill-collection/whereto/**"
+      - "mattpocock-skills/**"
+      - "bergside-typeui/**"
+      - "conorbronsdon-avoid-ai-writing/**"
+      - "github-awesome-copilot/prd/**"
+
+jobs:
+  check-bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Check whereto vendored skills for drift
+        run: node casualattitude0-skill-collection/whereto/scripts/check-bundle.mjs
