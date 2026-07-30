@@ -63,6 +63,17 @@ and re-syncs it, so the change can be silently reverted. Plugins are switched
 off via `enabledPlugins` in `~/.claude/settings.json`, or uninstalled through
 the app's plugin UI.
 
+**Before recommending a plugin be disabled, read its `.mcp.json`.** A plugin
+can bundle an MCP server, in which case disabling it removes that server's
+tools as well as its skills — the user loses the whole integration, not the
+per-turn cost of its guidance. Figma and Miro are both like this. Since MCP
+tools are deferred and cost nothing until called, the real trade is "skills
+tokens now" against "the integration at all", which is a very different
+question from cutting a redundant skill. Say so explicitly when presenting it,
+and check whether the server offers on-demand skill delivery (Figma's
+`get_figma_skill` / `read_skill_uri`) that would let the tools stay while the
+always-on skills go.
+
 Note the panel counts name plus description, not the whole frontmatter, so
 measure `description:` alone when reconciling against what the UI reports —
 counting full frontmatter overstates it by roughly a quarter.

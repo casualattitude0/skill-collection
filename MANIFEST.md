@@ -138,37 +138,43 @@ the row back to `enabled` plus a `sync.sh` run restores it.
 The `Skills` context block is not only this repo. Measured 2026-07-30, with the
 panel counting name + description:
 
-| Source | Tokens | Skills | Controlled by |
+| Source | Tokens | Skills | Status |
 |---|---:|---:|---|
-| this manifest | ~5.1k | 62 | `sync.sh` |
-| Figma plugin | ~2.0k | 14 | `enabledPlugins` (see below) |
-| CLI built-ins | ~0.6k | 7 | nothing — ships with Claude Code |
-| Miro plugin | ~0.35k | 7 | `enabledPlugins` (see below) |
-| Plugin Management | ~0.24k | 2 | `enabledPlugins` |
+| this manifest | ~5.1k | 62 | managed by `sync.sh` |
+| Figma plugin | ~2.0k | 14 | **kept** — see below |
+| CLI built-ins | ~0.6k | 7 | not controllable; ships with Claude Code |
+| Miro plugin | ~0.35k | 7 | **kept** — see below |
+| Plugin Management | ~0.24k | 2 | kept |
 
 Figma and Miro are user-installed from the `knowledge-work-plugins` marketplace
-and together cost ~2.4k for two integrations that are not even authenticated.
-They live under `~/Library/Application Support/Claude/local-agent-mode-sessions/
-<accountUuid>/<workspaceId>/rpm/plugin_*/skills/`. That path is stable — the
-UUID is the account, not a session — but the app verifies and re-syncs the tree
-against the marketplace, so **do not disable them by editing files there**: a
-sync or app update can silently restore them.
-
-Instead they are switched off declaratively in `~/.claude/settings.json`:
+and together cost ~2.4k per turn. Disabling them was considered on 2026-07-30
+and **rejected**, because each plugin bundles its own MCP server:
 
 ```json
-"enabledPlugins": {
-  "figma@knowledge-work-plugins": false,
-  "miro@knowledge-work-plugins": false
-}
+// figma/.mcp.json                    // miro/.mcp.json
+"figma": { "type": "http",            "miro": { "type": "http",
+  "url": "https://mcp.figma.com/mcp" }  "url": "https://mcp.miro.com/" }
 ```
 
-**Unverified.** `enabledPlugins` is documented for CLI plugins; these are
-desktop-app plugins from a server-side marketplace, so the setting may be a
-no-op for them. Confirm after an app restart by checking whether `figma:*` and
-`miro:*` skills still appear. If they do, the supported fallback is uninstalling
-both through the app's plugin UI. Backup of the original settings file:
-`~/.claude/settings.json.bak-2026-07-30`.
+Disabling a plugin therefore removes the ~27 Figma / ~56 Miro **tools** as well
+as the skills — losing the integration outright, not just its guidance. Those
+tools are deferred, so they cost nothing to keep; only the skills are charged
+per turn. Paying ~2.4k to retain two working integrations was judged worth it.
+
+If that trade is ever revisited, the mechanism is `enabledPlugins` in
+`~/.claude/settings.json` (`"figma@knowledge-work-plugins": false`), which is
+documented for CLI plugins and **unverified** for desktop ones — confirm after
+an app restart, and fall back to the app's plugin UI. Do **not** disable them
+by editing files under `~/Library/Application Support/Claude/
+local-agent-mode-sessions/<accountUuid>/<workspaceId>/rpm/plugin_*/`: the path
+is stable, but the app verifies and re-syncs that tree, so edits can be
+silently reverted.
+
+A middle option exists and was not taken: move the MCP server definitions into
+`~/.claude.json` directly, keeping the tools (deferred, free) while dropping the
+always-on skills. Figma supports this explicitly — its server exposes
+`get_figma_skill` and `read_skill_uri` for fetching guidance on demand. Miro has
+no equivalent, so its 7 skills would simply be lost.
 
 ## Resolved overlap groups
 

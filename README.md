@@ -347,9 +347,11 @@ career skills, and five redundant ones. Re-enable a stack when you next work
 in it.
 
 That is not the whole `Skills` block: plugin and CLI-bundled skills add ~3.2k
-more and are invisible to this manifest. See
+more and are invisible to this manifest. The Figma and Miro plugins are ~2.4k
+of it and are **kept deliberately** — each bundles its own MCP server, so
+disabling one removes the integration's tools, not just its guidance. See
 [MANIFEST.md](MANIFEST.md#not-in-this-table--plugin-and-built-in-skills) for
-the breakdown and how to switch plugins off.
+the breakdown and the trade.
 
 The manifest covers the vendored collection plus `local-skills/career/`.
 Anything else in `local-skills/` is unmanaged and activated by hand:
