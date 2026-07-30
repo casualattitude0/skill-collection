@@ -1,0 +1,191 @@
+{
+  "$schema": "./bundle.schema.json",
+  "description": "Source of truth for whereto's bundled skills. copy = byte-identical to a canonical source in this repo and must not drift. detached = the bundle is now the only copy; its former source (gstack-game) was removed from this repo on 2026-07-30, so only presence is checked.",
+  "skills": [
+    {
+      "name": "asset-review",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "avoid-ai-writing",
+      "source": "impact-driven-writing/skills/avoid-ai-writing",
+      "mode": "copy"
+    },
+    {
+      "name": "balance-review",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "build-playability-review",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "careful",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "codebase-design",
+      "source": "engineering/codebase-design",
+      "mode": "copy"
+    },
+    {
+      "name": "diagnosing-bugs",
+      "source": "engineering/diagnosing-bugs",
+      "mode": "copy"
+    },
+    {
+      "name": "domain-modeling",
+      "source": "engineering/domain-modeling",
+      "mode": "copy"
+    },
+    {
+      "name": "feel-pass",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "game-codex",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "game-debug",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "game-direction",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "game-docs",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "game-eng-review",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "game-ideation",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "game-import",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "game-qa",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "game-retro",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "game-review",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "game-ship",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "game-ux-review",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "game-visual-qa",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "gameplay-implementation-review",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "guard",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "implementation-handoff",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "pitch-review",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "plan-design-review",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "player-experience",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "playtest",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "prd",
+      "source": "product-planning/prd",
+      "mode": "copy"
+    },
+    {
+      "name": "prototype",
+      "source": "engineering/prototype",
+      "mode": "copy"
+    },
+    {
+      "name": "prototype-slice-plan",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "spark-lens",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "tdd",
+      "source": "engineering/tdd",
+      "mode": "copy"
+    },
+    {
+      "name": "triage",
+      "source": null,
+      "mode": "detached"
+    },
+    {
+      "name": "typeui-fundamentals",
+      "source": "design/typeui-fundamentals",
+      "mode": "copy"
+    },
+    {
+      "name": "unfreeze",
+      "source": null,
+      "mode": "detached"
+    }
+  ]
+}
