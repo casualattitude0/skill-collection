@@ -1,0 +1,24 @@
+{
+  "skill_name": "showcase-writer",
+  "evals": [
+    {
+      "id": 0,
+      "kind": "trigger",
+      "name": "fires-on-raw-material",
+      "prompt": "Last year I led the migration off our legacy job queue. Took about four months, cut p99 latency roughly 40%, and I had to talk three teams into it without being anyone's manager. Help me write this up for my resume.",
+      "expect_trigger": true
+    },
+    {
+      "id": 1,
+      "kind": "trigger",
+      "name": "defers-existing-bullet-to-case-study",
+      "prompt": "Here's a bullet from my resume: 'Reduced p99 latency 40% by migrating off a legacy job queue.' I want to build that out into a full write-up for my portfolio site.",
+      "expect_trigger": false,
+      "assertions": [
+        {
+          "text": "Routes to portfolio-case-study-writer, which expands an existing bullet"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "0": {
+    "fired": true,
+    "output": "router chose showcase-writer"
+  },
+  "1": {
+    "fired": false,
+    "output": "router chose portfolio-case-study-writer",
+    "assertions": {
+      "Routes to portfolio-case-study-writer, which expands an existing bullet": true
+    }
+  },
+  "_note": "Trigger lane verified in fresh subagent contexts after the 2026-07-28 description rewrite."
+}
