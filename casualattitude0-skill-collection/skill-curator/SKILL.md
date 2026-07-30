@@ -1,6 +1,6 @@
 ---
 name: skill-curator
-description: Audit and curate the vendored skill collection — find overlapping/redundant skills, decide which to keep using a ponytail-style simplicity lens, and sync ~/.claude/skills/ symlinks to match. Use when asked to audit installed skills, clean up skill bloat, find skill collisions, or after vendoring a new skill into this repo. Not for validating a single skill before shipping it (see skill-verdict), and not for career/ or local-skills/, which this does not manage.
+description: Audit and curate the installed skill collection — find overlapping/redundant skills, decide which to keep using a ponytail-style simplicity lens, and sync ~/.claude/skills/ symlinks to match. Use when asked to audit installed skills, clean up skill bloat, cut context/token cost from skills, find skill collisions, or after vendoring a new skill into this repo. Not for validating a single skill before shipping it (see skill-verdict), and not for anything absent from MANIFEST.md.
 user_invocable: true
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep
 license: MIT
@@ -15,9 +15,19 @@ finding overlapping skills and cutting the weaker ones — the ponytail
 principle (simplest solution that actually works) applied to the skill
 collection itself, not just to code.
 
-It manages only skills vendored into this repo (source-repo-named
-directories at the repo root). It does not touch `local-skills/`, `career/`
-inside it, or anything not tracked in `MANIFEST.md`.
+It manages exactly the rows in `MANIFEST.md`: the vendored skills in
+source-repo-named directories at the repo root, plus `local-skills/career/`.
+It touches nothing absent from that table — the rest of `local-skills/`, and
+`find-skills`, which points outside this repo.
+
+**Overlap is not the only reason to disable.** A skill can be unique and still
+not worth its keep: a whole language or framework stack you are not currently
+working in costs tokens on every turn for nothing. Those groups are the
+largest available cut, so measure before recommending — sort skills by
+frontmatter size and by source directory rather than assuming the directory
+with the most skills is the most expensive. Disabling on these grounds needs
+the same per-group confirmation as an overlap cut, since only the user knows
+what they are about to work on.
 
 Paths below are relative to the **repo root**
 (`/Users/attitudecasual/Developer/Skills`).

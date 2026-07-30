@@ -51,9 +51,12 @@ vendored here is the generated payload already installed on this machine
 (`.graphify_version` = `0.9.23`), not a file copy of a commit. Stars were not
 measured. Re-syncing means re-running the upstream generator, not a `git pull`.
 
-Resume and job-search skills are **not tracked here**. All 22 still live on disk
-under `local-skills/career/` and stay symlinked into `~/.claude/skills`, but
-`local-skills/` is gitignored, so this repo neither ships nor pins them.
+Resume and job-search skills are **not vendored or pinned here** — all 22 live
+under `local-skills/career/`, which is gitignored, so this repo neither ships
+nor versions them. They are, however, listed in [`MANIFEST.md`](MANIFEST.md) as
+of 2026-07-30 so their activation can be toggled; they currently sit
+`disabled`, since they never fire during development work but still cost
+context on every turn.
 
 ---
 
@@ -326,12 +329,21 @@ sh casualattitude0-skill-collection/skill-curator/sync.sh --dry-run   # preview
 sh casualattitude0-skill-collection/skill-curator/sync.sh             # apply
 ```
 
-Or run `/skill-curator`, which scans for drift, proposes what to cut when two
-skills overlap, and syncs once you confirm. Takes effect next Claude Code
-session either way.
+Or run `/skill-curator`, which scans for drift, proposes what to cut — whether
+two skills overlap or a whole stack is idle — and syncs once you confirm. Takes
+effect next Claude Code session either way.
 
-The manifest covers only the vendored collection. `local-skills/` — including
-`career/` — is unmanaged and stays activated by hand:
+`disabled` removes the symlink only; the skill stays on disk, so flipping the
+row back and re-running `sync.sh` restores it.
+
+**Activation is not free.** Every enabled skill's frontmatter loads on every
+turn. As of 2026-07-30, **62 of 115 are enabled, costing ~6.4k tokens** — down
+from 111 enabled at ~10.9k, after disabling the Go, Flutter, and Vue stacks
+(idle), the 22 career skills, and five redundant skills. Re-enable a stack when
+you next work in it.
+
+The manifest covers the vendored collection plus `local-skills/career/`.
+Anything else in `local-skills/` is unmanaged and activated by hand:
 
 ```bash
 # activate (takes effect next Claude Code session)
