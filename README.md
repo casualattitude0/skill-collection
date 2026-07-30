@@ -330,18 +330,26 @@ sh casualattitude0-skill-collection/skill-curator/sync.sh             # apply
 ```
 
 Or run `/skill-curator`, which scans for drift, proposes what to cut — whether
-two skills overlap or a whole stack is idle — and syncs once you confirm. Takes
-effect next Claude Code session either way.
+two skills overlap or a whole stack is idle — and syncs once you confirm.
+
+**Restart the app to see the effect.** Skills are enumerated once at startup —
+opening a new conversation reuses that scan, so the context panel keeps
+reporting the old figure until Claude is fully quit and relaunched.
 
 `disabled` removes the symlink only; the skill stays on disk, so flipping the
 row back and re-running `sync.sh` restores it.
 
-**Activation is not free.** Every enabled skill's frontmatter loads on every
-turn. As of 2026-07-30, **61 of the manifest's 115 rows are enabled, costing
-~6.4k tokens** (62 skills load in total — the extra is unmanaged
-`find-skills`) — down from ~10.9k, after disabling the Go, Flutter, and Vue stacks
-(idle), the 22 career skills, and five redundant skills. Re-enable a stack when
-you next work in it.
+**Activation is not free.** Every enabled skill's name and description load on
+every turn. As of 2026-07-30, **61 of the manifest's 115 rows are enabled,
+costing ~5.1k tokens** (62 skills load — the extra is unmanaged `find-skills`),
+down from ~8.2k after disabling the idle Go, Flutter and Vue stacks, the 22
+career skills, and five redundant ones. Re-enable a stack when you next work
+in it.
+
+That is not the whole `Skills` block: plugin and CLI-bundled skills add ~3.2k
+more and are invisible to this manifest. See
+[MANIFEST.md](MANIFEST.md#not-in-this-table--plugin-and-built-in-skills) for
+the breakdown and how to switch plugins off.
 
 The manifest covers the vendored collection plus `local-skills/career/`.
 Anything else in `local-skills/` is unmanaged and activated by hand:

@@ -44,6 +44,29 @@ Any skill on disk but missing from `MANIFEST.md` is new — add it as a row
 with status `enabled` and an empty reason. Any manifest row whose source dir
 no longer exists should be removed (skill was un-vendored).
 
+**The `Skills` context block is wider than this manifest.** Plugin and
+CLI-bundled skills load too and are invisible to `~/.claude/skills/`, so a
+report based only on the three sources above will understate the real cost —
+on 2026-07-30 they were a third of the block. Measure them as well:
+
+```bash
+# installed plugins (path is keyed by account UUID, not session — it is stable)
+find "$HOME/Library/Application Support/Claude/local-agent-mode-sessions" \
+  -path '*/rpm/plugin_*/skills/*/SKILL.md' 2>/dev/null
+# skills bundled with the CLI itself
+find "$(dirname "$(readlink -f "$(which claude)")")/../.." -name SKILL.md 2>/dev/null
+```
+
+Report these separately rather than folding them into the manifest total, and
+never disable a plugin skill by editing files in that tree — the app verifies
+and re-syncs it, so the change can be silently reverted. Plugins are switched
+off via `enabledPlugins` in `~/.claude/settings.json`, or uninstalled through
+the app's plugin UI.
+
+Note the panel counts name plus description, not the whole frontmatter, so
+measure `description:` alone when reconciling against what the UI reports —
+counting full frontmatter overstates it by roughly a quarter.
+
 ## Step 2 — Find overlap candidates
 
 Group skills by shared capability — same language/framework, same task

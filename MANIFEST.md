@@ -133,6 +133,43 @@ the row back to `enabled` plus a `sync.sh` run restores it.
 | python-testing-patterns | wshobson-agents/python-testing-patterns | enabled |  |
 | humanizer-tw | yelban-humanizer.tw/humanizer-tw | enabled | kept over humanizer-zh-tw — native Chinese patterns, Taiwanese voice, plus Grep/Glob so it can scan files |
 
+## Not in this table — plugin and built-in skills
+
+The `Skills` context block is not only this repo. Measured 2026-07-30, with the
+panel counting name + description:
+
+| Source | Tokens | Skills | Controlled by |
+|---|---:|---:|---|
+| this manifest | ~5.1k | 62 | `sync.sh` |
+| Figma plugin | ~2.0k | 14 | `enabledPlugins` (see below) |
+| CLI built-ins | ~0.6k | 7 | nothing — ships with Claude Code |
+| Miro plugin | ~0.35k | 7 | `enabledPlugins` (see below) |
+| Plugin Management | ~0.24k | 2 | `enabledPlugins` |
+
+Figma and Miro are user-installed from the `knowledge-work-plugins` marketplace
+and together cost ~2.4k for two integrations that are not even authenticated.
+They live under `~/Library/Application Support/Claude/local-agent-mode-sessions/
+<accountUuid>/<workspaceId>/rpm/plugin_*/skills/`. That path is stable — the
+UUID is the account, not a session — but the app verifies and re-syncs the tree
+against the marketplace, so **do not disable them by editing files there**: a
+sync or app update can silently restore them.
+
+Instead they are switched off declaratively in `~/.claude/settings.json`:
+
+```json
+"enabledPlugins": {
+  "figma@knowledge-work-plugins": false,
+  "miro@knowledge-work-plugins": false
+}
+```
+
+**Unverified.** `enabledPlugins` is documented for CLI plugins; these are
+desktop-app plugins from a server-side marketplace, so the setting may be a
+no-op for them. Confirm after an app restart by checking whether `figma:*` and
+`miro:*` skills still appear. If they do, the supported fallback is uninstalling
+both through the app's plugin UI. Backup of the original settings file:
+`~/.claude/settings.json.bak-2026-07-30`.
+
 ## Resolved overlap groups
 
 Audited 2026-07-30. Every skill named here carries a `Reason` in the table
