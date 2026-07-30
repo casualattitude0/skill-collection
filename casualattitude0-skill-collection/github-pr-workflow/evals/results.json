@@ -1,0 +1,15 @@
+{
+  "0": {
+    "fired": false,
+    "output": "router chose github-pr-merge"
+  },
+  "1": {
+    "fired": false,
+    "output": "router chose github-pr-workflow-only"
+  },
+  "2": {
+    "fired": true,
+    "output": "router chose github-pr-workflow"
+  },
+  "_note": "Trigger lane run as independent router decisions in fresh subagent contexts. Golden and red-team lanes not yet written."
+}

@@ -1,0 +1,26 @@
+{
+  "skill_name": "github-pr-workflow-only",
+  "evals": [
+    {
+      "id": 0,
+      "kind": "trigger",
+      "name": "defers-to-github-pr-merge",
+      "prompt": "Open a PR from feat/checkout into main and merge it. No review needed, I already looked at it.",
+      "expect_trigger": false
+    },
+    {
+      "id": 1,
+      "kind": "trigger",
+      "name": "fires-github-pr-workflow-only",
+      "prompt": "Open a PR from feat/checkout into main, have an agent review it once, and merge only if it passes. If it fails just leave the comment and stop — don't try to fix anything.",
+      "expect_trigger": true
+    },
+    {
+      "id": 2,
+      "kind": "trigger",
+      "name": "defers-to-github-pr-workflow",
+      "prompt": "Create a PR from feat/checkout into main and get it merged. Have a reviewer agent go over it, and if it comes back failed, fix the issues and re-review until it's clean.",
+      "expect_trigger": false
+    }
+  ]
+}
