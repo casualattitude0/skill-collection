@@ -6,11 +6,14 @@
 #
 # Config (env, with defaults):
 #   CMR_PLAN_GLOB   glob of plan files to guard   (default: docs/plans/*.md)
-#   CMR_STAMP       stamp substring to look for   (default: cross-model-review: approved)
+#
+# A valid stamp is the final line of a plan and identifies both the reviewer and
+# the resumable reviewer thread. A substring is not enough: anyone could write
+# one without having the review the gate is meant to require.
 set -euo pipefail
 
 PLAN_GLOB="${CMR_PLAN_GLOB:-docs/plans/*.md}"
-STAMP="${CMR_STAMP:-cross-model-review: approved}"
+STAMP_PATTERN='^<!--[[:space:]]cross-model-review:[[:space:]]approved[[:space:]]by[[:space:]].+[[:space:]]\(.+,[[:space:]]thread[[:space:]].+\)[[:space:]]-->$'
 
 cat >/dev/null   # drain the hook payload on stdin; this gate needs none of it
 
@@ -19,7 +22,7 @@ unstamped=()
 for f in $PLAN_GLOB; do
   # Every plan in the glob is guarded. Committing an unstamped plan must not
   # exempt it — a plan committed before review is exactly the one to catch.
-  tail -n 5 "$f" | grep -qF "$STAMP" || unstamped+=("$f")
+  tail -n 1 "$f" | grep -Eq "$STAMP_PATTERN" || unstamped+=("$f")
 done
 
 [ ${#unstamped[@]} -eq 0 ] && exit 0

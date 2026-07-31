@@ -106,7 +106,7 @@ cd "$(mktemp -d)" && mkdir -p docs/plans
 CMR_PLAN_GLOB='docs/plans/*.md' $H </dev/null           # no plans  -> silent
 printf '# p\n' > docs/plans/x.md
 CMR_PLAN_GLOB='docs/plans/*.md' $H </dev/null           # unstamped -> block JSON
-printf '\n<!-- cross-model-review: approved by t -->\n' >> docs/plans/x.md
+printf '\n<!-- cross-model-review: approved by gpt-5.6 (Codex CLI, thread review-123) -->\n' >> docs/plans/x.md
 CMR_PLAN_GLOB='docs/plans/*.md' $H </dev/null           # stamped   -> silent
 ```
 
