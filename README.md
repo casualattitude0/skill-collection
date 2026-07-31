@@ -289,6 +289,7 @@ rather than a pin. All of them live in `casualattitude0-skill-collection/`.
 
 | Skill | Last updated | Purpose |
 |-------|--------------|---------|
+| `localizer-ja` | 2026-07-31 | zh-TW / English → Japanese localization, aimed at killing 翻訳臭 rather than just being grammatical. Three modes with their own 文体 and fatal error: academic (定訳, no invented terminology), media (subtitle spec, 役割語 restraint), business (敬語 尺度, 婉曲 refusal ladder) |
 | `skill-curator` | 2026-07-30 | Keep the installed skill set lean — scans for drift between `MANIFEST.md`, the repo, and `~/.claude/skills/`, flags overlapping skills through a ponytail simplicity lens, then syncs the symlinks to the decisions you confirm |
 | `local-transcribe` | 2026-07-29 | Whisper on your own hardware — video/podcast/recording → transcript, no API key, no upload ([setup](casualattitude0-skill-collection/local-transcribe/INSTALL.md)) |
 | `skill-verdict` | 2026-07-28 | Validate a skill before it ships — audit, collision sweep, eval grading |
@@ -310,6 +311,13 @@ that, not by name: **merge** = none, **workflow-only** = one pass then halt,
 `skill-curator` and `skill-verdict` are also a pair: **verdict** judges one
 skill in isolation before it ships, **curator** judges the corpus as a whole
 and decides what stays installed.
+
+`localizer-ja` sits opposite the vendored `humanizer-tw`: that one strips AI
+tells *out of* Chinese prose, this one produces Japanese. They share no trigger
+surface, and one of `localizer-ja`'s rules exists because of the contrast —
+good Chinese writing means cutting connectives like 此外, and Japanese wants
+them added. Applying either language's instincts to the other is how you get
+prose whose joints have disappeared.
 
 ---
 
