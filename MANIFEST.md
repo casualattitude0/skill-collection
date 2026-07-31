@@ -38,7 +38,7 @@ the row back to `enabled` plus a `sync.sh` run restores it.
 | webapp-testing | anthropics-skills/webapp-testing | enabled | kept alongside playwright-cli — Python/local-app debugging with browser-log capture is a distinct job |
 | typeui-fundamentals | bergside-typeui/typeui-fundamentals | enabled | kept over frontend-design — principles and WCAG reference, complementary to impeccable |
 | commitify | casualattitude0-skill-collection/commitify | enabled |  |
-| cross-model-review | casualattitude0-skill-collection/cross-model-review | disabled | canary 2026-07-31 — running at project scope only (`.claude/skills/`) to watch real traffic before it competes with every user-scope skill; promote by flipping to `enabled` |
+| cross-model-review | casualattitude0-skill-collection/cross-model-review | enabled | reviews plans pre-implementation via a second model — no overlap with the code-diff reviewers |
 | git-hot-fix | casualattitude0-skill-collection/git-hot-fix | enabled |  |
 | github-pr-merge | casualattitude0-skill-collection/github-pr-merge | enabled |  |
 | github-pr-workflow | casualattitude0-skill-collection/github-pr-workflow | enabled |  |

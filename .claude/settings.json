@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "CMR_PLAN_GLOB='docs/plans/*.md' $CLAUDE_PROJECT_DIR/.claude/skills/cross-model-review/hooks/require-review-stamp.sh"
+            "command": "CMR_PLAN_GLOB='docs/plans/*.md' $CLAUDE_PROJECT_DIR/casualattitude0-skill-collection/cross-model-review/hooks/require-review-stamp.sh"
           }
         ]
       }
