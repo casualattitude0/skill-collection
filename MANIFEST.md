@@ -43,6 +43,7 @@ the row back to `enabled` plus a `sync.sh` run restores it.
 | github-pr-workflow | casualattitude0-skill-collection/github-pr-workflow | enabled |  |
 | github-pr-workflow-only | casualattitude0-skill-collection/github-pr-workflow-only | enabled |  |
 | local-transcribe | casualattitude0-skill-collection/local-transcribe | enabled |  |
+| localizer-ja | casualattitude0-skill-collection/localizer-ja | enabled | no overlap with the humanizer skills — those de-AI Chinese/English prose, this localizes into Japanese |
 | model-selection | casualattitude0-skill-collection/model-selection | enabled |  |
 | showcase-writer | casualattitude0-skill-collection/showcase-writer | enabled |  |
 | skill-curator | casualattitude0-skill-collection/skill-curator | enabled |  |

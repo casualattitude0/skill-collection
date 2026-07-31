@@ -1,0 +1,34 @@
+{
+  "skill_name": "localizer-ja",
+  "evals": [
+    {
+      "id": 0,
+      "name": "business-keigo-refusal",
+      "prompt": "把這封信翻成日文寄給客戶。原文在 inputs/business-email.md。",
+      "expected_output": "敬体 Japanese business email: 社外 register, 弊社/貴社 correct, no 二重敬語, no gratuitous させていただく, refusal rendered on the 婉曲 ladder (見送らせていただく / 難しい状況) rather than 無理です, cushion phrases before the price rise and the refusal, standard 冒頭/結び.",
+      "files": ["inputs/business-email.md"]
+    },
+    {
+      "id": 1,
+      "name": "subtitle-role-language",
+      "prompt": "Localize these subtitles into Japanese. Input is in inputs/subtitle-dialogue.md.",
+      "expected_output": "SRT with original timings. KAEDE and REN clearly distinguished by 語尾 and 一人称 (old-man register vs eager boy). Lines fit ~13-16 全角 chars/line, max 2 lines, ~4 chars/sec. Cue 7 keeps the beat/pause. No 敬体 leakage into KAEDE's blunt lines.",
+      "files": ["inputs/subtitle-dialogue.md"]
+    },
+    {
+      "id": 2,
+      "name": "academic-teiyaku-nohallucination",
+      "prompt": "這篇摘要要投日文期刊，請翻成日文抄録。原文在 inputs/paper-abstract.md。",
+      "expected_output": "常体 (である体) abstract. Correct 定訳: 注意機構, 過学習, few-shot→少数事例/few-shot学習, ablation→アブレーション, baseline→ベースライン, out-of-distribution→分布外. The coined term 表徵坍縮延遲 must be flagged as uncertain and/or given with the English in parentheses, NOT silently invented. Hedge strength preserved (可能與…有關 → 〜可能性がある, not 〜である).",
+      "files": ["inputs/paper-abstract.md"]
+    },
+    {
+      "id": 3,
+      "name": "cleanup-existing-mt-japanese",
+      "status": "NOT YET RUN — covers the third declared trigger branch, which iteration-1 missed entirely",
+      "prompt": "這份日文是機器翻的，讀起來很怪，幫我修乾淨。",
+      "expected_output": "Editing (not generating) 800+ chars of machine-translated Japanese from a Chinese corporate 会社案内. This is the branch where 翻訳臭の型 1/2/3/6/7 function as a FIND list rather than a don't-produce list — the model's default editing behaviour is conservative, so it fixes what it notices and leaves grammatical-but-wrong prose alone. Assertions should count surviving instances of することができます / を行う / の-chains ≥3 / calqued passives, with-skill vs baseline.",
+      "files": ["inputs/mt-japanese-cleanup.md — TO BE WRITTEN"]
+    }
+  ]
+}
