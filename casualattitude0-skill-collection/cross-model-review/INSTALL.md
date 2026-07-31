@@ -38,8 +38,9 @@ Make the script executable:
 chmod +x ~/.claude/skills/cross-model-review/hooks/require-review-stamp.sh
 ```
 
-Register it in `~/.claude/settings.json` (or a project `.claude/settings.json`
-to gate one repo only):
+### User scope — gate every project
+
+Add to `~/.claude/settings.json`, keeping whatever keys are already there:
 
 ```json
 {
@@ -50,7 +51,7 @@ to gate one repo only):
         "hooks": [
           {
             "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/.claude/skills/cross-model-review/hooks/require-review-stamp.sh"
+            "command": "H=\"$HOME/.claude/skills/cross-model-review/hooks/require-review-stamp.sh\"; [ -x \"$H\" ] || exit 0; CMR_PLAN_GLOB='docs/plans/*.md' \"$H\""
           }
         ]
       }
@@ -59,7 +60,58 @@ to gate one repo only):
 }
 ```
 
-Point `CMR_PLAN_GLOB` at wherever your plans live if it is not `docs/plans/*.md`.
+The `[ -x "$H" ] || exit 0` guard matters at this scope. The path runs through
+`~/.claude/skills/`, which disappears when the skill is disabled — without the
+guard the hook would then error on every turn, in every project.
+
+### Project scope — gate one repo
+
+Same shape in that repo's `.claude/settings.json`, pointing at the skill
+wherever it lives:
+
+```json
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CMR_PLAN_GLOB='docs/plans/*.md' $CLAUDE_PROJECT_DIR/path/to/cross-model-review/hooks/require-review-stamp.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Register it in one scope only — both together fire the gate twice in that repo.
+
+### The glob
+
+`CMR_PLAN_GLOB` decides what is guarded; it defaults to `docs/plans/*.md`. At
+user scope this reaches into every project, so a repo with pre-existing plans
+that predate this workflow will block on first use — they carry no stamp
+because nothing ever reviewed them. Either stamp them by hand, or narrow the
+glob so only new plans enter the gate.
+
+Verify all four paths before trusting it:
+
+```bash
+H=~/.claude/skills/cross-model-review/hooks/require-review-stamp.sh
+cd "$(mktemp -d)" && mkdir -p docs/plans
+
+CMR_PLAN_GLOB='docs/plans/*.md' $H </dev/null           # no plans  -> silent
+printf '# p\n' > docs/plans/x.md
+CMR_PLAN_GLOB='docs/plans/*.md' $H </dev/null           # unstamped -> block JSON
+printf '\n<!-- cross-model-review: approved by t -->\n' >> docs/plans/x.md
+CMR_PLAN_GLOB='docs/plans/*.md' $H </dev/null           # stamped   -> silent
+```
+
+The hook exits 0 whether it blocks or passes — the JSON on stdout is what
+decides. Test by looking at the output, not the exit code.
 
 ## Escape hatch
 

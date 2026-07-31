@@ -289,6 +289,7 @@ rather than a pin. All of them live in `casualattitude0-skill-collection/`.
 
 | Skill | Last updated | Purpose |
 |-------|--------------|---------|
+| `cross-model-review` | 2026-07-31 | Adversarial plan review by a second model — drives Codex (or another frontier CLI) over one held session until both reach consensus, then stamps the plan. Ships a Stop hook that refuses to end a turn while an unstamped plan exists, so the review does not depend on remembering it ([setup](casualattitude0-skill-collection/cross-model-review/INSTALL.md)) |
 | `localizer-ja` | 2026-07-31 | zh-TW / English → Japanese localization, aimed at killing 翻訳臭 rather than just being grammatical. Three modes with their own 文体 and fatal error: academic (定訳, no invented terminology), media (subtitle spec, 役割語 restraint), business (敬語 尺度, 婉曲 refusal ladder) |
 | `skill-curator` | 2026-07-30 | Keep the installed skill set lean — scans for drift between `MANIFEST.md`, the repo, and `~/.claude/skills/`, flags overlapping skills through a ponytail simplicity lens, then syncs the symlinks to the decisions you confirm |
 | `local-transcribe` | 2026-07-29 | Whisper on your own hardware — video/podcast/recording → transcript, no API key, no upload ([setup](casualattitude0-skill-collection/local-transcribe/INSTALL.md)) |
@@ -346,6 +347,13 @@ reporting the old figure until Claude is fully quit and relaunched.
 
 `disabled` removes the symlink only; the skill stays on disk, so flipping the
 row back and re-running `sync.sh` restores it.
+
+**`sync.sh` reconciles symlinks, not hooks.** `cross-model-review` is the one
+skill here that also needs a hook registered in `settings.json`, so enabling its
+manifest row installs the skill but not its gate — see
+[its INSTALL.md](casualattitude0-skill-collection/cross-model-review/INSTALL.md).
+Disabling the row leaves the hook in place; it is written to no-op when the
+skill is gone, so it goes quiet rather than erroring on every turn.
 
 **Activation is not free.** Every enabled skill's name and description load on
 every turn. As of 2026-07-30, **61 of the manifest's 115 rows are enabled,
