@@ -10,6 +10,7 @@ DRY_RUN=0
 [ "${1:-}" = "--dry-run" ] && DRY_RUN=1
 
 [ -f "$MANIFEST" ] || { echo "MANIFEST.md not found at $MANIFEST" >&2; exit 1; }
+[ "$DRY_RUN" = "1" ] || mkdir -p "$TARGET_DIR"
 
 # Table rows look like: | skill-name | source/dir/skill-name | enabled | reason |
 grep -E '^\| ' "$MANIFEST" | grep -v -- '---' | grep -v '| Skill | Source dir |' | \
