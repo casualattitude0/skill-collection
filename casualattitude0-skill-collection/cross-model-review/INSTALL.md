@@ -19,6 +19,9 @@ The skill shells out to a second model. Install whichever you use as reviewer
 and confirm two things: it runs non-interactively, and it can resume a session —
 the skill depends on holding one session across rounds.
 
+Install the CLI for the model family opposite the author. Claude authors can
+operate Codex models; Codex authors can operate Claude models.
+
 With the Codex CLI, `codex exec` and `codex exec resume <thread_id>` cover both.
 Verify the resume actually carries memory rather than assuming it:
 
@@ -29,6 +32,24 @@ codex exec resume <thread_id> --skip-git-repo-check "What was the codeword?"
 
 Codex installed as a plugin may not be on `PATH` — the binary lives under
 `~/.codex/`, so symlink it where the skill can reach it.
+
+With Claude Code, `claude -p --output-format json` returns `session_id` and
+`result`; follow-ups use `claude -p --resume <session_id>`. Confirm installation
+and authentication, then verify session continuity:
+
+```bash
+claude --version
+claude auth status
+R=$(claude -p --model '<claude-model-id>' --output-format json \
+  'Remember: PANGOLIN-7. Reply: ok')
+SID=$(printf '%s' "$R" | jq -r '.session_id')
+claude -p --resume "$SID" --model '<claude-model-id>' \
+  'What was the codeword?'
+```
+
+Use a full model ID when reproducibility matters. Do not use `--continue` for
+review rounds because it targets the most recent project session rather than the
+specific review session.
 
 ## Hook
 

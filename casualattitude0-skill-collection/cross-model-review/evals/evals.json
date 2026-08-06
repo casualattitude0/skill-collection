@@ -30,6 +30,29 @@
       "expect_trigger": false
     },
     {
+      "id": 11,
+      "kind": "trigger",
+      "name": "fires-when-codex-is-asked-to-use-claude",
+      "prompt": "Use Claude Opus through the Claude Code CLI to adversarially review my finished implementation plan and keep the same Claude session until you agree.",
+      "expect_trigger": true
+    },
+    {
+      "id": 12,
+      "kind": "golden",
+      "name": "codex-drives-one-claude-session",
+      "prompt": "You are Codex. Have a Claude model cross-review docs/plans/oversell.md before implementation.",
+      "expected_output": "Claude Code is invoked non-interactively with an explicit model, its session ID is captured, every follow-up resumes that same ID, and the plan is stamped only after consensus.",
+      "files": ["fixtures/plans/oversell.md"],
+      "trajectory": ["Read", "Bash", "Edit", "Bash"],
+      "assertions": [
+        { "text": "Checks that the Claude CLI is installed and authenticated before treating it as the reviewer" },
+        { "text": "Uses claude -p with JSON output and captures a non-empty session_id and result" },
+        { "text": "Uses --resume with the captured Claude session ID for every later round rather than --continue or a fresh session" },
+        { "text": "Restricts Claude to read-only discovery tools and leaves plan edits to the author" },
+        { "text": "The final stamp names the configured Claude model, Claude Code CLI, and session ID" }
+      ]
+    },
+    {
       "id": 4,
       "kind": "golden",
       "name": "oversell-plan-unarbitrated-concurrency",
