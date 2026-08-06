@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cross-model Discuss"
+  short_description: "Let Codex and Claude explore a topic together"
+  default_prompt: "Use $cross-model-discuss to have Codex and Claude discuss this topic from different perspectives."

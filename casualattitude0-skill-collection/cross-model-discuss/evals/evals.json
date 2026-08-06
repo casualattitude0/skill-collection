@@ -1,0 +1,51 @@
+{
+  "skill_name": "cross-model-discuss",
+  "evals": [
+    {
+      "id": 0,
+      "kind": "trigger",
+      "name": "fires-on-codex-claude-discussion",
+      "prompt": "Have Codex and Claude discuss whether our API should use webhooks or polling, then show me where their views differ.",
+      "expect_trigger": true
+    },
+    {
+      "id": 1,
+      "kind": "trigger",
+      "name": "fires-on-exploratory-debate",
+      "prompt": "I want a cross-model debate that explores both sides of this architecture choice without trying to approve either one.",
+      "expect_trigger": true
+    },
+    {
+      "id": 2,
+      "kind": "trigger",
+      "name": "stays-quiet-on-plan-review",
+      "prompt": "Adversarially review this implementation plan, fix every finding, and stamp it when the reviewer agrees.",
+      "expect_trigger": false
+    },
+    {
+      "id": 3,
+      "kind": "golden",
+      "name": "sustained-attributed-dialogue",
+      "prompt": "Use Codex and Claude for three turns to discuss whether local-first architecture fits this product.",
+      "expected_output": "One peer session carries a three-turn exchange in which both models advance the discussion, followed by an attributed synthesis that preserves disagreement.",
+      "assertions": [
+        { "text": "Opens one peer session and resumes its explicit ID for all later turns" },
+        { "text": "The host gives an opening position and responds substantively after every peer response" },
+        { "text": "Runs the requested three peer turns even if the models agree earlier" },
+        { "text": "Attributes contributions and distinguishes them from the final synthesis" },
+        { "text": "Reports live disagreements and open questions without issuing approval or a review stamp" }
+      ]
+    },
+    {
+      "id": 4,
+      "kind": "golden",
+      "name": "missing-peer-is-not-simulated",
+      "prompt": "Let Codex discuss this database choice with Claude.",
+      "expected_output": "If Claude Code is unavailable or unauthenticated, the run reports that limitation instead of inventing Claude's side of the dialogue.",
+      "assertions": [
+        { "text": "Checks peer CLI availability and authentication before attributing a response" },
+        { "text": "Does not simulate, paraphrase, or fabricate the unavailable peer model" }
+      ]
+    }
+  ]
+}
