@@ -12,33 +12,35 @@ within each group by GitHub stars.
 
 ## Ledger
 
-Stars measured 2026-07-30. **Pin** is the upstream commit this repo is synced to.
-On 2026-07-30 the first 18 upstreams were force-synced to their `main` HEAD and
-each pin verified against it, so **those 18 are pinned and none has drifted**.
-`Graphify-Labs/graphify` came in later the same day and is pinned by release
-version rather than commit — see its note below. **Vendored** stays at first
-acquisition — the pin, not that date, says which version you hold.
+Stars measured 2026-09-13. **Pin** is the upstream commit this repo is synced to.
+On 2026-09-13 the 18 Tier 1 and Tier 2 upstreams were re-synced to their
+`main` HEAD: 13 had moved and were mirrored file-for-file, 5 (`antfu/skills`,
+`bergside/typeui`, `currents-dev`, `sergiodxa`, `yelban`) were still at the
+pin. **Those 18 are pinned and none has drifted.** `Graphify-Labs/graphify` is
+pinned by release version rather than commit — see its note below.
+**Vendored** stays at first acquisition — the pin, not that date, says which
+version you hold.
 
 | Upstream | Stars | Skills | Vendored | Pin |
 |----------|------:|-------:|----------|-----|
-| [mattpocock/skills](https://github.com/mattpocock/skills) | 194,572 | 22 | 2026-07-01 | `2ab9580` |
-| [anthropics/skills](https://github.com/anthropics/skills) | 165,056 | 10 | 2026-06-16 | `b29e7cf` |
-| [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) | 91,689 | 6 | 2026-07-22 | `16f2980` |
-| [Panniantong/agent-reach](https://github.com/Panniantong/agent-reach) | 62,481 | 1 | 2026-07-30 | `b4d52c4` |
-| [github/awesome-copilot](https://github.com/github/awesome-copilot) | 37,206 | 3 | 2026-06-16 | `45305f1` |
-| [pbakaus/impeccable](https://github.com/pbakaus/impeccable) | 52,623 | 1 | 2026-07-01 | `9a949fb` |
-| [wshobson/agents](https://github.com/wshobson/agents) | 38,356 | 1 | 2026-06-16 | `c4b82b0` |
-| [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) | 29,608 | 1 | 2026-06-16 | `7c180d9` |
-| [microsoft/playwright-cli](https://github.com/microsoft/playwright-cli) | 12,243 | 1 | 2026-06-16 | `eee5a18` |
-| [antfu/skills](https://github.com/antfu/skills) | 5,678 | 9 | 2026-06-16 | `a74f281` |
-| [samber/cc-skills-golang](https://github.com/samber/cc-skills-golang) | 2,785 | 8 | 2026-06-16 | `e27d59c` |
-| [flutter/skills](https://github.com/flutter/skills) | 2,755 | 10 | 2026-06-16 | `8aaa41d` |
-| [conorbronsdon/avoid-ai-writing](https://github.com/conorbronsdon/avoid-ai-writing) | 2,683 | 1 | 2026-06-19 | `9cbe815` |
-| [bergside/typeui](https://github.com/bergside/typeui) | 1,664 | 1 | 2026-06-20 | `2a977f1` |
-| [kevintsai1202/Humanizer-zh-TW](https://github.com/kevintsai1202/Humanizer-zh-TW) | 672 | 1 | 2026-06-19 | `ef82d8c` |
-| [currents-dev/playwright-best-practices-skill](https://github.com/currents-dev/playwright-best-practices-skill) | 341 | 1 | 2026-06-16 | `283d5cb` |
-| [sergiodxa/agent-skills](https://github.com/sergiodxa/agent-skills) | 93 | 1 | 2026-06-16 | `40e21b4` |
-| [yelban/humanizer.tw](https://github.com/yelban/humanizer.tw) | 13 | 1 | 2026-06-19 | `cb9bfa9` |
+| [mattpocock/skills](https://github.com/mattpocock/skills) | 260,313 | 22 | 2026-07-01 | `3cca18b` |
+| [anthropics/skills](https://github.com/anthropics/skills) | 175,952 | 10 | 2026-06-16 | `34040c9` |
+| [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) | 136,431 | 6 | 2026-07-22 | `356918e` |
+| [Panniantong/agent-reach](https://github.com/Panniantong/agent-reach) | 79,647 | 1 | 2026-07-30 | `da5044d` |
+| [github/awesome-copilot](https://github.com/github/awesome-copilot) | 38,930 | 3 | 2026-06-16 | `7568a48` |
+| [pbakaus/impeccable](https://github.com/pbakaus/impeccable) | 67,527 | 1 | 2026-07-01 | `cb56ed6` |
+| [wshobson/agents](https://github.com/wshobson/agents) | 39,588 | 1 | 2026-06-16 | `a30778f` |
+| [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) | 31,126 | 1 | 2026-06-16 | `063bee9` |
+| [microsoft/playwright-cli](https://github.com/microsoft/playwright-cli) | 13,259 | 1 | 2026-06-16 | `655530f` |
+| [antfu/skills](https://github.com/antfu/skills) | 5,875 | 9 | 2026-06-16 | `a74f281` |
+| [samber/cc-skills-golang](https://github.com/samber/cc-skills-golang) | 3,240 | 8 | 2026-06-16 | `19a0626` |
+| [flutter/skills](https://github.com/flutter/skills) | 2,929 | 10 | 2026-06-16 | `7cdb7d3` |
+| [conorbronsdon/avoid-ai-writing](https://github.com/conorbronsdon/avoid-ai-writing) | 4,329 | 1 | 2026-06-19 | `c5a8b05` |
+| [bergside/typeui](https://github.com/bergside/typeui) | 1,909 | 1 | 2026-06-20 | `2a977f1` |
+| [kevintsai1202/Humanizer-zh-TW](https://github.com/kevintsai1202/Humanizer-zh-TW) | 839 | 1 | 2026-06-19 | `f63ee46` |
+| [currents-dev/playwright-best-practices-skill](https://github.com/currents-dev/playwright-best-practices-skill) | 375 | 1 | 2026-06-16 | `283d5cb` |
+| [sergiodxa/agent-skills](https://github.com/sergiodxa/agent-skills) | 90 | 1 | 2026-06-16 | `40e21b4` |
+| [yelban/humanizer.tw](https://github.com/yelban/humanizer.tw) | 14 | 1 | 2026-06-19 | `cb9bfa9` |
 | [Graphify-Labs/graphify](https://github.com/Graphify-Labs/graphify) | — | 1 | 2026-07-30 | `v0.9.23` |
 | [casualattitude0](https://github.com/casualattitude0/skill-collection) | — | 13 | — | n/a |
 
@@ -67,7 +69,7 @@ agent's process and behaviour on any project.
 
 ### [mattpocock/skills](https://github.com/mattpocock/skills) — 22 skills
 
-**Source** `git@github.com:mattpocock/skills.git` · pinned `2ab9580` — **at upstream HEAD** (checked 2026-07-30)
+**Source** `git@github.com:mattpocock/skills.git` · pinned `3cca18b` — **at upstream HEAD** (synced 2026-09-13)
 
 `engineering/` + `productivity/`. Run `/setup-matt-pocock-skills` once per repo
 first — it configures the issue tracker, triage labels, and doc layout the rest
@@ -89,7 +91,6 @@ read from.
 | `/setup-matt-pocock-skills` | engineering | One-time per repo — issue tracker, triage labels, doc layout |
 | `/handoff` | productivity | Compacts this conversation into a handoff doc for the next agent |
 | `/teach` | productivity | Teaches you a concept across sessions, using the cwd as a workspace |
-| `/writing-great-skills` | productivity | Reference for writing skills well — pruning, leading words, completion criteria |
 
 Typical run: `/grill-me` → `/to-spec` → `/to-tickets` → `/implement`
 
@@ -106,14 +107,18 @@ Typical run: `/grill-me` → `/to-spec` → `/to-tickets` → `/implement`
 | `research` | engineering | Background agent investigates a question against primary sources → cited notes |
 | `resolving-merge-conflicts` | engineering | Work an in-progress merge/rebase hunk by hunk, resolving by intent — never `--abort` |
 | `grilling` | productivity | Interview you relentlessly to stress-test a plan before building |
+| `writing-for-agents` | productivity | Reference for writing any document an agent consumes — skills, `AGENTS.md`, pointed-to docs. Was `/writing-great-skills` until upstream 1.2.0 renamed, restructured and made it model-invoked; renamed here on the 2026-09-13 sync |
+
+Upstream has since added `wizard` (engineering), `to-questionnaire` and
+`wait-what` (productivity), plus `misc/` and `in-progress/` categories. None
+are vendored — they have not been evaluated here yet.
 
 ### [anthropics/skills](https://github.com/anthropics/skills) — 10 skills
 
-**Source** `git@github.com:anthropics/skills.git` · pinned `b29e7cf` — **at upstream HEAD** (checked 2026-07-30)
+**Source** `git@github.com:anthropics/skills.git` · pinned `34040c9` — **at upstream HEAD** (synced 2026-09-13)
 
-Nine live in `anthropic/`, vendored 2026-07-30 at `b29e7cf`.
-`testing/webapp-testing` predates them (2026-06-16) and was verified
-byte-identical to the same upstream.
+All ten live in upstream `skills/`. Re-synced 2026-09-13 at `34040c9`; only
+`frontend-design` had changed since `b29e7cf`.
 
 | Skill | Folder | Purpose |
 |-------|--------|---------|
@@ -128,14 +133,16 @@ byte-identical to the same upstream.
 | `brand-guidelines` | anthropic | Applies **Anthropic's** official brand colors and typography to artifacts |
 | `webapp-testing` | testing | Playwright web-app testing via Python |
 
-Upstream ships 17. The remaining seven — `canvas-design`, `docx`, `pdf`,
+Upstream ships 19. Seven of the rest — `canvas-design`, `docx`, `pdf`,
 `pptx`, `xlsx`, `skill-creator`, `claude-api` — ship bundled with Claude Code
 and are deliberately **not** vendored: two copies of the same skill name would
-collide. They sit outside this ledger, with no pin and no version.
+collide. They sit outside this ledger, with no pin and no version. The other
+two, `academy-guide` and `discernment-nudge`, arrived upstream after the first
+vendoring and have not been evaluated here.
 
 ### [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) — 6 skills
 
-**Source** `git@github.com:DietrichGebert/ponytail.git` · pinned `16f2980` — **at upstream HEAD** (checked 2026-07-30)
+**Source** `git@github.com:DietrichGebert/ponytail.git` · pinned `356918e` — **at upstream HEAD** (synced 2026-09-13)
 
 Forces the laziest solution that actually works — YAGNI, stdlib before custom
 code, native platform features before dependencies. Intensity levels: lite, full,
@@ -152,13 +159,14 @@ ultra.
 
 ### [Panniantong/agent-reach](https://github.com/Panniantong/agent-reach) — 1 skill
 
-**Source** `git@github.com:Panniantong/agent-reach.git` · pinned `b4d52c4` — **at upstream HEAD** (synced 2026-07-30)
+**Source** `git@github.com:Panniantong/agent-reach.git` · pinned `da5044d` — **at upstream HEAD** (synced 2026-09-13)
 
 `productivity/agent-reach` — gives the agent read access to 15 platforms behind
 one router: web and code search, Twitter, Reddit, YouTube, Bilibili,
-XiaoHongShu, V2EX, Facebook, Instagram, LinkedIn, GitHub, RSS, and podcasts.
-`SKILL.md` holds the routing table; `references/` carries per-category command
-sets (search / social / career / dev / web / video), read on demand.
+XiaoHongShu, V2EX, Facebook, Instagram, LinkedIn, GitHub, RSS, podcasts, and
+(since the 2026-09-13 sync) Xueqiu stock data. `SKILL.md` holds the routing
+table; `references/` carries per-category command sets (search / social /
+career / dev / web / video / finance), read on demand.
 
 Upstream is a Python package — only `agent_reach/skill/` is vendored here. The
 `agent-reach` CLI it drives installs separately (currently v1.5.0 at
@@ -168,7 +176,7 @@ logged-in session or cookies; six channels work with zero config.
 
 ### [github/awesome-copilot](https://github.com/github/awesome-copilot) — 3 skills
 
-**Source** `git@github.com:github/awesome-copilot.git` · pinned `45305f1` — **at upstream HEAD** (synced 2026-07-30)
+**Source** `git@github.com:github/awesome-copilot.git` · pinned `7568a48` — **at upstream HEAD** (synced 2026-09-13)
 
 | Skill | Folder | Vendored | Purpose |
 |-------|--------|----------|---------|
@@ -185,33 +193,38 @@ you're working in that domain.
 
 ### [pbakaus/impeccable](https://github.com/pbakaus/impeccable) — 1 skill
 
-**Source** `git@github.com:pbakaus/impeccable.git` · pinned `9a949fb` — **at upstream HEAD** (synced 2026-07-30)
+**Source** `git@github.com:pbakaus/impeccable.git` · pinned `cb56ed6` — **at upstream HEAD** (synced 2026-09-13)
 
 `design/impeccable` — production-grade frontend design and iteration. 23
 `/impeccable` commands (craft, shape, audit, critique, polish, animate…), 44
-deterministic AI-slop detector rules, bundled Node tooling.
+deterministic AI-slop detector rules. Vendored from upstream
+`.claude/skills/impeccable/` (skill 4.3.1 as of the 2026-09-13 sync). The
+bundled Node `.mjs` tooling is gone: `scripts/impeccable` is now a launcher
+that downloads the self-contained Impeccable engine binary into
+`~/.impeccable/bin/` on first run, so the first `/impeccable` command needs
+network access.
 
 ### [wshobson/agents](https://github.com/wshobson/agents) — 1 skill
 
-**Source** `git@github.com:wshobson/agents.git` · pinned `c4b82b0` — **at upstream HEAD** (synced 2026-07-30)
+**Source** `git@github.com:wshobson/agents.git` · pinned `a30778f` — **at upstream HEAD** (synced 2026-09-13)
 
 `testing/python-testing-patterns` — pytest: fixtures, mocking, TDD.
 
 ### [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) — 1 skill
 
-**Source** `git@github.com:vercel-labs/agent-skills.git` · pinned `7c180d9` — **at upstream HEAD** (synced 2026-07-30)
+**Source** `git@github.com:vercel-labs/agent-skills.git` · pinned `063bee9` — **at upstream HEAD** (synced 2026-09-13)
 
 `react/react-best-practices` — React / Next.js performance rules.
 
 ### [microsoft/playwright-cli](https://github.com/microsoft/playwright-cli) — 1 skill
 
-**Source** `git@github.com:microsoft/playwright-cli.git` · pinned `eee5a18` — **at upstream HEAD** (synced 2026-07-30)
+**Source** `git@github.com:microsoft/playwright-cli.git` · pinned `655530f` — **at upstream HEAD** (synced 2026-09-13)
 
 `testing/playwright-cli` — CLI for agentic browser automation.
 
 ### [antfu/skills](https://github.com/antfu/skills) — 9 skills
 
-**Source** `git@github.com:antfu/skills.git` · pinned `a74f281` — **at upstream HEAD** (synced 2026-07-30)
+**Source** `git@github.com:antfu/skills.git` · pinned `a74f281` — **at upstream HEAD** (checked 2026-09-13, unchanged)
 
 All in `vue/`.
 
@@ -229,9 +242,10 @@ All in `vue/`.
 
 ### [samber/cc-skills-golang](https://github.com/samber/cc-skills-golang) — 8 skills
 
-**Source** `git@github.com:samber/cc-skills-golang.git` · pinned `e27d59c` — **at upstream HEAD** (synced 2026-07-30)
+**Source** `git@github.com:samber/cc-skills-golang.git` · pinned `19a0626` — **at upstream HEAD** (synced 2026-09-13)
 
-All in `golang/`.
+All in `golang/`. Upstream has grown to 46 skills (samber/*, uber fx/dig,
+cobra, viper, grpc, gopls…); only the original 8 are vendored.
 
 | Skill | Purpose |
 |-------|---------|
@@ -246,9 +260,10 @@ All in `golang/`.
 
 ### [flutter/skills](https://github.com/flutter/skills) — 10 skills
 
-**Source** `git@github.com:flutter/skills.git` · pinned `8aaa41d` — **at upstream HEAD** (synced 2026-07-30)
+**Source** `git@github.com:flutter/skills.git` · pinned `7cdb7d3` — **at upstream HEAD** (synced 2026-09-13)
 
-All in `flutter/`. Official.
+All in `flutter/`. Official. Upstream has added 14 `dart-*` skills since; not
+vendored.
 
 | Skill | Purpose |
 |-------|---------|
@@ -267,16 +282,28 @@ All in `flutter/`. Official.
 
 Single-skill sources under 5k stars. Clone with
 `git@github.com:<owner>/<repo>.git`; all six are pinned at upstream HEAD as of
-2026-07-30 — see the [Ledger](#ledger).
+2026-09-13 — see the [Ledger](#ledger).
 
 | Skill | Folder | Upstream | Stars | Vendored | Purpose |
 |-------|--------|----------|------:|----------|---------|
-| `avoid-ai-writing` | impact-driven-writing | [conorbronsdon](https://github.com/conorbronsdon/avoid-ai-writing) | 2,683 | 2026-06-19 | Audit and rewrite content to remove AI-isms |
-| `typeui-fundamentals` | design | [bergside/typeui](https://github.com/bergside/typeui) | 1,664 | 2026-06-20 | UI/UX principles — hierarchy, 30 UX laws, typography, spacing, WCAG |
-| `humanizer-zh-tw` | impact-driven-writing | [kevintsai1202](https://github.com/kevintsai1202/Humanizer-zh-TW) | 672 | 2026-06-19 | 去除 AI 寫作特徵（繁體中文） |
-| `playwright-best-practices` | testing | [currents-dev](https://github.com/currents-dev/playwright-best-practices-skill) | 341 | 2026-06-16 | Deep Playwright guide — E2E, flaky tests, POM, a11y |
-| `frontend-testing-best-practices` | testing | [sergiodxa](https://github.com/sergiodxa/agent-skills) | 93 | 2026-06-16 | Prefer E2E, minimize mocking |
-| `humanizer-tw` | impact-driven-writing | [yelban](https://github.com/yelban/humanizer.tw) | 13 | 2026-06-19 | 去除中文 AI 生成痕跡（台灣風格） |
+| `avoid-ai-writing` | impact-driven-writing | [conorbronsdon](https://github.com/conorbronsdon/avoid-ai-writing) | 4,329 | 2026-06-19 | Audit and rewrite content to remove AI-isms |
+| `typeui-fundamentals` | design | [bergside/typeui](https://github.com/bergside/typeui) | 1,909 | 2026-06-20 | UI/UX principles — hierarchy, 30 UX laws, typography, spacing, WCAG |
+| `humanizer-zh-tw` | impact-driven-writing | [kevintsai1202](https://github.com/kevintsai1202/Humanizer-zh-TW) | 839 | 2026-06-19 | 去除 AI 寫作特徵（繁體中文） |
+| `playwright-best-practices` | testing | [currents-dev](https://github.com/currents-dev/playwright-best-practices-skill) | 375 | 2026-06-16 | Deep Playwright guide — E2E, flaky tests, POM, a11y |
+| `frontend-testing-best-practices` | testing | [sergiodxa](https://github.com/sergiodxa/agent-skills) | 90 | 2026-06-16 | Prefer E2E, minimize mocking |
+| `humanizer-tw` | impact-driven-writing | [yelban](https://github.com/yelban/humanizer.tw) | 14 | 2026-06-19 | 去除中文 AI 生成痕跡（台灣風格） |
+
+Two of these changed shape upstream on the 2026-09-13 sync:
+
+- `avoid-ai-writing` was a whole-repo copy (the skill *was* the repo root at
+  `9cbe815`). Upstream has since split into a monorepo, so the vendored folder
+  now mirrors `skills/avoid-ai-writing/` — `SKILL.md`, `references/`,
+  `detector/`, `scripts/`, `examples/`, `agents/` — plus the upstream `LICENSE`
+  and a local `SOURCE.md`. Half the size, same skill.
+- `humanizer-zh-tw` gained a sibling upstream, `text-watermark-cleaner-zh-tw`
+  (invisible-Unicode and text-provenance cleanup). Only the root skill is
+  vendored; its `SKILL.md` now hands watermark requests to the sibling, which
+  will not resolve here unless it is vendored too.
 
 ---
 
