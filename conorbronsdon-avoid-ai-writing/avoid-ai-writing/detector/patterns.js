@@ -1,6 +1,6 @@
 /**
  * Avoid AI Writing — detection engine (canonical source of truth)
- * Implements 45-category pattern detection. This repo's SKILL.md
+ * Implements regex, structural, and stylometric pattern detection. This repo's SKILL.md
  * catalogs the human-editable pattern rules; this engine is the executable
  * expression of the regex-detectable subset and extends it with stylometric and
  * AI-tool-fingerprint detectors that don't make sense as skill prose
@@ -44,17 +44,67 @@ const AIDetector = (() => {
   };
   const GREEK_LOOKALIKES = { 'ο': 'o', 'Ο': 'O', 'α': 'a', 'Α': 'A', 'ρ': 'p', 'Ρ': 'P' };
 
-  function normalizeText(text) {
+  // ─── Source-coordinate mapping (issue #189) ─────────────────────────
+  //
+  // Each entry maps one code unit in the working string to the matching
+  // code unit in the caller's source. Deletion passes copy the entries for
+  // retained characters once, so interleaved or overlapping removals cannot
+  // double-count offsets. Masking and homoglyph replacement keep their input
+  // length and therefore keep the current map unchanged.
+  function identitySourceMap(length) {
+    return Array.from({ length }, (_, index) => index);
+  }
+
+  function appendMapRange(target, source, start, end) {
+    for (let index = start; index < end; index += 1) target.push(source[index]);
+  }
+
+  function remapFindingsToSource(issues, regions, sourceMap) {
+    for (const issue of issues) {
+      if (Number.isInteger(issue.index)) issue.index = sourceMap[issue.index];
+    }
+    for (const region of regions) {
+      region.start = sourceMap[region.start];
+      region.end = sourceMap[region.end - 1] + 1;
+    }
+  }
+
+  const ZERO_WIDTH_RE = /[​-‍﻿⁠]/u;
+  const ZERO_WIDTH_GLOBAL_RE = /[​-‍﻿⁠]/gu;
+  const HOMOGLYPH_GLOBAL_RE = /[Ѐ-ӿͰ-Ͽ]/gu;
+  const ROLEPLAY_VERBS_RE = /^(?:nods|sighs|laughs|smiles|frowns|shrugs|grins|winks|chuckles|gasps|pauses|thinks|wonders|whispers|shouts|gestures|raises|leans|turns|looks|glances|smirks|blinks|nodding|sighing|laughing|smiling|thinking|gesturing)\b/i;
+  const ROLEPLAY_MARKER_RE = /(?<!\*)\*([^*\n]{1,80}?)\*(?!\*)/gu;
+
+  function normalizeText(text, sourceMap) {
     const flags = { zeroWidth: 0, homoglyph: 0, roleplay: 0 };
     let out = text;
+    let map = Array.isArray(sourceMap) ? sourceMap : null;
 
     // 1. Strip zero-width chars (ZWSP U+200B, ZWNJ U+200C, ZWJ U+200D,
     //    BOM U+FEFF, word joiner U+2060).
-    out = out.replace(/[​-‍﻿⁠]/g, () => { flags.zeroWidth++; return ''; });
+    if (map) {
+      const chars = [];
+      const nextMap = [];
+      for (let i = 0; i < out.length; i += 1) {
+        if (ZERO_WIDTH_RE.test(out[i])) {
+          flags.zeroWidth += 1;
+          continue;
+        }
+        chars.push(out[i]);
+        nextMap.push(map[i]);
+      }
+      out = chars.join('');
+      map = nextMap;
+    } else {
+      out = out.replace(ZERO_WIDTH_GLOBAL_RE, () => {
+        flags.zeroWidth += 1;
+        return '';
+      });
+    }
 
     // 2. Swap Cyrillic / Greek Latin-lookalike chars back to Latin so
     //    pattern matching catches obfuscated tokens.
-    out = out.replace(/[Ѐ-ӿͰ-Ͽ]/g, (m) => {
+    out = out.replace(HOMOGLYPH_GLOBAL_RE, (m) => {
       const swap = CYRILLIC_LOOKALIKES[m] ?? GREEK_LOOKALIKES[m];
       if (swap) { flags.homoglyph++; return swap; }
       return m;
@@ -66,13 +116,34 @@ const AIDetector = (() => {
     //    artifact shape. Markdown `**bold**` is rejected by the
     //    lookbehind/lookahead; legitimate multi-word `*italic*` is
     //    preserved because the verb whitelist is narrow.
-    const ROLEPLAY_VERBS = /^(?:nods|sighs|laughs|smiles|frowns|shrugs|grins|winks|chuckles|gasps|pauses|thinks|wonders|whispers|shouts|gestures|raises|leans|turns|looks|glances|smirks|blinks|nodding|sighing|laughing|smiling|thinking|gesturing)\b/i;
-    out = out.replace(/(?<!\*)\*([^*\n]{1,80}?)\*(?!\*)/gu, (m, inner) => {
-      if (ROLEPLAY_VERBS.test(inner)) { flags.roleplay++; return ''; }
-      return m;
-    });
+    if (map) {
+      const chars = [];
+      const nextMap = [];
+      const matcher = new RegExp(ROLEPLAY_MARKER_RE.source, ROLEPLAY_MARKER_RE.flags);
+      let cursor = 0;
+      let match;
+      while ((match = matcher.exec(out)) !== null) {
+        if (!ROLEPLAY_VERBS_RE.test(match[1])) continue;
+        chars.push(out.slice(cursor, match.index));
+        appendMapRange(nextMap, map, cursor, match.index);
+        flags.roleplay += 1;
+        cursor = match.index + match[0].length;
+      }
+      chars.push(out.slice(cursor));
+      appendMapRange(nextMap, map, cursor, map.length);
+      out = chars.join('');
+      map = nextMap;
+    } else {
+      out = out.replace(ROLEPLAY_MARKER_RE, (m, inner) => {
+        if (ROLEPLAY_VERBS_RE.test(inner)) {
+          flags.roleplay += 1;
+          return '';
+        }
+        return m;
+      });
+    }
 
-    return { text: out, flags };
+    return map ? { text: out, flags, sourceMap: map } : { text: out, flags };
   }
 
   // ─── Tier 1: Always flag ───────────────────────────────────────────
@@ -131,33 +202,26 @@ const AIDetector = (() => {
     { pattern: /\bthought\s+leader(?:ship)?\b/gi, replace: 'expert, authority' },
     { pattern: /\bbest\s+practices\b/gi, replace: 'what works, proven methods' },
     { pattern: /\bat\s+its\s+core\b/gi, replace: 'cut, just state it' },
-    { pattern: /\bin\s+order\s+to\b/gi, replace: 'to' },
-    { pattern: /\bdue\s+to\s+the\s+fact\s+that\b/gi, replace: 'because' },
-    { pattern: /\bserves\s+as\b/gi, replace: 'is' },
-    { pattern: /\bfeatures\b/gi, replace: 'has, includes', filter: true },
-    { pattern: /\bboasts\b/gi, replace: 'has' },
-    { pattern: /\butiliz(?:e|es|ing|ed)\b/gi, replace: 'use' },
+    { pattern: /\bin\s+order\s+to\b/gi, replace: 'to', clarity: true },
+    { pattern: /\bdue\s+to\s+the\s+fact\s+that\b/gi, replace: 'because', clarity: true },
+    { pattern: /\bserves\s+as\b/gi, replace: 'is', clarity: true },
+    { pattern: /\bfeatures\b/gi, replace: 'has, includes', filter: true, clarity: true },
+    { pattern: /\bboasts\b/gi, replace: 'has', clarity: true },
+    { pattern: /\butiliz(?:e|es|ing|ed)\b/gi, replace: 'use', clarity: true },
     { pattern: /\bshowcas(?:e|es|ing|ed)\b/gi, replace: 'show, demonstrate' },
     { pattern: /\bembark(?:s|ing|ed)?\b/gi, replace: 'start, begin' },
-    { pattern: /\bcommenc(?:e|es|ing|ed)\b/gi, replace: 'start, begin' },
-    { pattern: /\bascertain(?:s|ing|ed)?\b/gi, replace: 'find out, determine' },
-    { pattern: /\bendeavou?r(?:s|ing|ed)?\b/gi, replace: 'effort, attempt, try' },
+    { pattern: /\bcommenc(?:e|es|ing|ed)\b/gi, replace: 'start, begin', clarity: true },
+    { pattern: /\bascertain(?:s|ing|ed)?\b/gi, replace: 'find out, determine', clarity: true },
+    { pattern: /\bendeavou?r(?:s|ing|ed)?\b/gi, replace: 'effort, attempt, try', clarity: true },
     { pattern: /\bunderscor(?:es|ing|ed)\b/gi, replace: 'highlights, shows' },
     // Hyphen required. The unhyphenated "load bearing" is ordinary English —
     // "the load bearing down on the bridge" — where `bearing` is a participle,
     // not part of a compound modifier. The tell is always hyphenated.
     //
-    // Construction carve-out: exempt attributive `load-bearing` before a literal
-    // structural noun, with one optional material/position adjective in between
-    // ("load-bearing structural wall"). The noun list is limited to commonly
-    // physical nouns; the abstract-capable ones most likely to carry the
-    // metaphor (structure, element, frame, foundation) are omitted so "the
-    // load-bearing structure of the argument" still fires. Some listed nouns
-    // (member, column, partition) can still be used metaphorically and are
-    // silently exempt — a recall loss in the safe direction, tracked in #56.
-    // Predicative use ("the wall is load-bearing") is NOT exempt: the tell
-    // lives in the subject, which a lookahead cannot reach. Also #56.
-    { pattern: /\bload-bearing\b(?!\s+(?:(?:structural|exterior|interior|internal|external|concrete|steel|timber|wooden|brick|masonry|perimeter|basement|main|primary|existing|original)\s+)?(?:walls?|beams?|columns?|joists?|truss(?:es)?|members?|footings?|slabs?|studs?|partitions?|masonry|lintels?|piers?|rafters?|girders?|capacity|capacities)\b)/gi, replace: 'essential, critical, or say what breaks if you remove it' },
+    // Only match an immediately following abstract noun from this seed list.
+    // Unknown nouns, mixed physical/abstract nouns, and predicative uses pass:
+    // precision over recall (#56). Keep the lookahead out of the matched span.
+    { pattern: /\bload-bearing\b(?=[ \t]+(?:assumptions?|claims?|invariants?|premises?|constraints?|dependenc(?:y|ies)|arguments?|abstractions?)\b)/gi, replace: 'essential, critical, or say what breaks if you remove it' },
   ];
 
   // ─── Tier 2: Flag in clusters (2+ per paragraph) ──────────────────
@@ -272,6 +336,9 @@ const AIDetector = (() => {
   // though all three are tagged `critical`.
   const ISSUE_WEIGHTS = {
     tier1: 5,
+    // Wordiness, not an AI-frequency marker. Weighted like tier2 so a
+    // clarity fix cannot push a document toward an AI classification.
+    'tier1-clarity': 3,
     tier2: 3,
     tier3: 2,
     transition: 2,
@@ -286,13 +353,16 @@ const AIDetector = (() => {
     'vague-attribution': 5,
     'hollow-intensifier': 2,
     'emotional-flatline': 2,
+    'lingering-attention': 3,
     'novelty-inflation': 3,
     'cutoff-disclaimer': 10,
     'template-phrase': 3,
     'false-concession': 2,
     'rhetorical-question': 2,
     'confidence-calibration': 2,
-    'em-dash': 4,
+    // Writing-quality guidance whose authorship polarity changes across model
+    // generations. Keep the flag visible without moving authorship outputs.
+    'em-dash': 0,
     uniformity: 5,
     formatting: 3,
     'tier3-phrase': 3,
@@ -311,11 +381,28 @@ const AIDetector = (() => {
     // strong single-hit social tell that the length divisor would
     // otherwise wash out on a short LinkedIn-length post.
     'social-cta-closer': 8,
+    // Performed-insight tics: single hits are common in human essays, so
+    // weighted like tier2 vocabulary — density does the classifying.
+    'performed-insight': 3,
+    // Negation chains are a strong single-hit structural tell.
+    'negation-chain': 5,
+    'dev-blog-boilerplate': 3,
     'formulaic-opener': 8,
     // Speculative scenario opener ("Imagine a world where…"). Weighted like
     // formulaic-opener: a single strong opener tell the length divisor would
     // otherwise wash out on a short post.
     'speculative-opener': 8,
+    // Launch-copy introduction ("Enter X.", "Meet X, your new...").
+    // Weighted like the other single-hit opener tells: strong on the
+    // short launch posts where it actually appears.
+    'launch-intro': 8,
+    // Dramatized crowd contrast. Gated hard on the dismissive verb, so
+    // a hit is meaningful, but the surface shares words with ordinary
+    // narrative — weighted below the opener tells on purpose.
+    'crowd-contrast': 6,
+    // Fake-casual props (stage directions, wink asides). Near-costume
+    // when present; same class as the opener tells on short posts.
+    'fake-casual-prop': 8,
     'title-case-header': 4,
     'parenthetical-hedge': 3,
     'smart-punct-signature': 6,
@@ -338,6 +425,10 @@ const AIDetector = (() => {
     'ai-placeholder': 10,
     'ai-citation-markup': 15,
     'ai-utm-source': 12,
+    // Curated P2 copyedits, not authorship evidence. Keep them visible in the
+    // issue list without moving the AI score, label, probabilities, or
+    // trinary classification on short documents.
+    'unnecessary-hyphenation': 0,
   };
 
   // ─── Transition phrases ────────────────────────────────────────────
@@ -463,6 +554,30 @@ const AIDetector = (() => {
     /^\s*interesting\s+(?:part|thing|aspect|piece)(?:\s+of\s+(?:the\s+)?\w+)?\s*:/gim,
   ];
 
+  // ─── Lingering-attention claims ────────────────────────────────────
+  // The share-post opener that claims duration of attention instead of
+  // saying anything about the thing ("the line I keep coming back to").
+  //
+  // Precision note: the bare verb phrase "I keep coming back to X" is NOT
+  // matched on its own, because it is legitimate whenever a reason follows
+  // ("I keep coming back to Hirschman because it predicts who quits"), and
+  // the reason clause is not reliably detectable by regex. Only the
+  // noun-anchored frame ("the line/quote/bit ... I keep coming back to")
+  // fires, which is the shape that introduces a subject rather than
+  // asserting something about it. The bare form stays a skill-prose
+  // judgment call. See SKILL.md §Lingering-attention claims carve-out.
+  const LINGERING_ATTENTION = [
+    // "the line I keep coming back to", "the one quote that I keep coming back to"
+    // Noun-anchored frame only. "can't stop thinking about" is deliberately
+    // left to its own pattern below rather than folded into this alternation,
+    // so "the line I can't stop thinking about" scores once, not twice.
+    /\b(?:the|that|this)\s+(?:one\s+)?(?:line|quote|bit|part|idea|point|framing|comment|thing)\s+(?:that\s+)?i\s+keep\s+(?:coming\s+back\s+to|thinking\s+about)\b/gi,
+    /\bi\s+can'?t\s+stop\s+thinking\s+about\b/gi,
+    /\bstill\s+thinking\s+about\s+(?:this|that)\s+one\b/gi,
+    /\b(?:been|be)\s+rattling\s+around\s+(?:in\s+)?my\s+(?:head|brain)\b/gi,
+    /\bi'?ve\s+been\s+chewing\s+on\s+(?:this|that)\b/gi,
+  ];
+
   // ─── Novelty inflation ─────────────────────────────────────────────
   const NOVELTY_INFLATION = [
     /\bthe\s+failure\s+mode\s+nobody'?s?\s+naming\b/gi,
@@ -563,7 +678,12 @@ const AIDetector = (() => {
   // opportunities", "may eventually unlock value." Either word alone is
   // fine; the stack is the tell.
   const HEDGE_STACK = [
-    /\b(?:could|may|might)\s+(?:\w+\s+){0,2}(?:potentially|eventually|ultimately|possibly|conceivably)\b/gi,
+    // At most one intervening word, and never a negator. The old {0,2} gap
+    // matched ordinary English: "could not possibly" (plain emphatic
+    // negation) and inverted questions like "could a savage possibly" both
+    // fired. Measured on the human-control corpus, 3 of 4 hedge-stack flags
+    // were this over-match. See issue #69.
+    /\b(?:could|may|might)\s+(?:(?!not\b|never\b|hardly\b|scarcely\b|barely\b)\w+\s+)?(?:potentially|eventually|ultimately|possibly|conceivably)\b/gi,
     /\b(?:potentially|eventually|ultimately)\s+(?:could|may|might)\b/gi,
   ];
 
@@ -618,12 +738,704 @@ const AIDetector = (() => {
     /\b(?:imagine|picture|envision)(?:\s*,[^,\n]{1,30},)?\s+a\s+(?:world|future|reality)\s+(?:where|in\s+which)\b/gi,
   ];
 
+  // ─── Launch-copy dramatic introductions ────────────────────────────
+  // "Meet Flowdesk, your new favorite treasury dashboard" / "Think
+  // Notion meets Figma" — the LLM-default product-introduction move
+  // in launch and announcement copy. Both surfaces are gated to the
+  // sentence-initial imperative followed by ONE capitalized token of 2
+  // to 30 characters, which is a recall limit: a two-token product name
+  // ("Meet North Star", "Think Google Docs meets Microsoft Word") is a
+  // deliberate miss. The Meet surface additionally requires one of four
+  // launch-copy heads — "your new favorite", "your new go-to", and
+  // "the new home/way/standard", the last three only when followed by
+  // "of" / "to" / "in|for" or by end-of-clause punctuation. Without
+  // that tail the head noun swallows a compound noun and ordinary prose
+  // fires: "Meet Rosa, the new home secretary" and "Meet Emma, the new
+  // way station manager" both matched before the tail was required.
+  // Bare "Meet Sarah, your new account manager" is how humans introduce
+  // colleagues, pets, and babies, so that form stays with the skill's
+  // judgment side. Two surfaces from
+  // the same family are deliberately NOT detected. "Say hello to X",
+  // because "Say hello to Grandma." is ordinary human prose. And bare
+  // "Enter X.", because the sentence-initial capitalized-noun form is
+  // how UI and doc instructions are written: "Enter Password.", "Enter
+  // Amount.", "Enter Username — your work email." Dropping the dash
+  // terminator does not reach the period-terminated class, and neither
+  // does a field-name denylist, so that surface stays with the skill's
+  // judgment side and the UI forms are pinned as must-not-fire
+  // fixtures. The anchors are lookbehinds so adjacent intros each
+  // count and the reported span starts at the tell itself.
+  const LAUNCH_INTROS = [
+    /(?<=^|[.!?]\s|\n)Meet\s+[A-Z][\w'-]{1,29}\s*,\s*(?:your\s+new\s+(?:favorite|go-to)\b|the\s+new\s+(?:home\s+of\b|way\s+to\b|standard\s+(?:in|for)\b|(?:standard|way|home)(?=\s*(?:[.!?,;:\u2013\u2014]|$))))/g,
+    /(?<=^|[.!?]\s|\n)[Tt]hink\s+[A-Z][\w'-]{1,29}\s+meets\s+[A-Z][\w'-]{1,29}\b/g,
+  ];
+
+  // ─── Dramatized contrast against the crowd ─────────────────────────
+  // "shipped it in 2022, while everyone else was still debating
+  // timelines" — a claim propped on an implied lagging crowd. The gate
+  // is a dismissive verb PLUS the "was still" dramatization marker,
+  // because bare "while everyone else" is ordinary simultaneity ("she
+  // read while everyone else watched the movie") and even the
+  // dismissive verbs are ordinary English in literal use ("others
+  // debated the amendment" in wire copy). That gate is on this FIRST
+  // branch only. Its stems are restricted to the -ing form, so the
+  // adjective ("was still deliberate about the tradeoff"), the passive
+  // ("was still debated by pundits") and the bare present ("was still
+  // debates timelines") all stay clean — allowing e/es/ed let all
+  // three through. The other two branches carry no "was still"
+  // requirement: they match their own stereotyped wording ("writing
+  // think-pieces", "playing catch-up"), and the skill entry scopes the
+  // claim the same way. Verb stems carry explicit inflection tails so
+  // agent nouns ("the market speculators") and adverbs ("deliberately
+  // ignored") never match. Measured residue, all accepted: branch one
+  // fires on ANY literal progressive use of its verbs ("while the
+  // market was still speculating about the price"), not only on "was
+  // still debating"; branches two and three fire on literal contrasts
+  // of their own ("while everyone else wrote think-pieces from
+  // Washington", "while everyone else played catch-up in the spring").
+  // Recall is deliberately sacrificed: "was busy debating" without
+  // "still" stays a miss, per precision-over-recall.
+  const CROWD_CONTRAST = [
+    /\bwhile\s+(?:everyone\s+else|the\s+(?:industry|market|competition)|others)\s+(?:was|were|is|are)\s+still\s+(?:busy\s+)?(?:(?:debat|deliberat|hesitat|theoriz|philosophiz|pontificat|speculat|argu)ing|(?:dither|bicker)ing)\b/gi,
+    /\bwhile\s+(?:everyone\s+else|the\s+(?:industry|market|competition)|others)\s+(?:was\s+|were\s+)?(?:busy\s+)?(?:writing|wrote)\s+think-?\s?pieces\b/gi,
+    /\bwhile\s+(?:everyone\s+else|the\s+(?:industry|market|competition)|others)\s+(?:was\s+|were\s+|is\s+|are\s+)?(?:still\s+)?play(?:ed|ing|s)?\s+catch[-\s]?up\b/gi,
+  ];
+
+  // ─── Fake-casual props (stage directions and wink asides) ──────────
+  // The regexable props from the fake-casual register: theatrical
+  // asterisk stage directions ("*checks notes*", "*chef's kiss*",
+  // "*mic drop*") and wink asides. Both lists are closed and short, and
+  // that is a recall limit: exactly six stage directions ("checks
+  // notes", "chef's kiss", "mic drop", "takes a deep breath", "sips
+  // coffee|tea", "nervous laughter") and exactly four parentheticals,
+  // the full (yes|no) x (really|seriously) grid. Neighbours in the same
+  // register are deliberate misses: "*checks calendar*" and "(yes,
+  // honestly)" do not fire. The kiss pattern requires the apostrophe —
+  // making it optional matched the ordinary sentence "At midnight,
+  // *chefs kiss* their spouses goodbye".
+  // The rest of the register (one-word verdict closers, label-prefix
+  // openers, the self-QA volley) needs register judgment and stays
+  // skill-only — "wild." is a word, not a regex target. "because of
+  // course …" joins them: a tense gate does not separate the wink from
+  // the ordinary human grumble, because "The build failed because of
+  // course it did." is that grumble in the same present-tense-plus-did
+  // form the wink uses. Under precision-over-recall the surface is
+  // judgment-only, and the grumble is pinned as a fixture. The kiss
+  // pattern accepts the curly apostrophe (U+2019) — the form smart
+  // punctuation and LLMs actually emit. Known accepted false positive:
+  // a human writer using a wink aside on purpose; the props are
+  // weighted as a strong single hit, not a classification by
+  // themselves.
+  const FAKE_CASUAL_PROPS = [
+    /\*\s?(?:checks\s+notes|chef['\u2019]s\s+kiss|mic\s+drop|takes\s+a\s+deep\s+breath|sips\s+(?:coffee|tea)|nervous\s+laughter)\s?\*/gi,
+    /\(\s?(?:yes|no)\s?,\s?(?:really|seriously)\s?\)/gi,
+  ];
+
+  // ─── Performed-insight phrases ─────────────────────────────────────
+  // Essayist tics that announce profundity instead of delivering it.
+  // Curated noun/complement lists keep precision high: "the whole family"
+  // and "sit with him" are ordinary English and must not fire. Adapted
+  // from Simon Willison's LLM cliché highlighter
+  // (tools.simonwillison.net/llm-cliche-highlighter).
+  const PERFORMED_INSIGHT = [
+    /\bsit(?:s|ting)?\s+with\s+(?:that|this)(?=\s*(?:[.!?,;:)\u2013\u2014\u2019"']|for\s+a\s+(?:moment|minute|second|beat)\b|$))(?:\s+for\s+a\s+(?:moment|minute|second|beat))?/gi,
+    /\bsit(?:s|ting)?\s+with\s+(?:the|your)\s+(?:discomfort|tension|uncertainty|ambiguity|grief|unease)\b/gi,
+    /\b(?:that|this|it|which)(?:['\u2019]s|\s+(?:is|was))\s+not\s+nothing\b/gi,
+    /\byou\s+already\s+know\s+the\s+answer\b/gi,
+    /\b(?:do\s+not|don['\u2019]t)\s+(?:have\s+to\s+)?take\s+my\s+word\s+for\s+it\b/gi,
+    /(?<=^|[.!?]\s|\n)Turns\s+out\b/g,
+    /(?:['\u2019]s|\b(?:is|was|are|were))\s+the\s+(?:whole|entire)\s+(?:point|game|ballgame|trick|pitch|idea|play|business\s+model|value\s+proposition)\b/gi,
+    /\b(?:that|this)(?:['\u2019]s|\s+(?:is|was))\s+the\s+part\s+(?:that|I|you|we|nobody|no\s+one|most\s+people)\b/gi,
+    /\bthe\s+only\s+[\w'\u2019-]+\s+that\s+(?:matters|counts)\b/gi,
+    /\bis\s+dead\s*[.;,:\u2013\u2014]\s*long\s+live\b/gi,
+    /\b(?:that|this)(?:['\u2019]s|\s+(?:is|was))\s+why\s+[^.!?\n]{0,60}\s+mattered\b/gi,
+  ];
+
+  // ─── Negation chains ───────────────────────────────────────────────
+  // "No fluff, no filler, no jargon" / "It didn't ask, didn't wait" /
+  // "Don't call it X. Call it Y." Precision guards, in order: the
+  // "no …" chain must open its sentence (mid-sentence inventories like
+  // "takes no arguments, no headers, and no body" are factual, not
+  // rhetorical); the "did not" chain must be comma-joined with the
+  // subject elided ("I did not sleep. I did not eat" is ordinary
+  // narration and stays clean); the stop-list keeps idiomatic pairs
+  // ("no more, no less", "no matter what") from firing. Adapted from
+  // Simon Willison's LLM cliché highlighter.
+  const NO_ITEM_STOP = "(?!matter\\b|one\\b|doubt\\b|longer\\b|way\\b|less\\b|more\\b|such\\b|other\\b|means\\b)";
+  const NO_ITEM_SECOND_STOP = "(?!(?:in|on|at|of|to|for|with|from|by|is|are|was|were|be|been|being|will|would|can|could|should|shall|may|might|must|have|has|had|do|does|did)\\b)";
+  const NEGATION_CHAIN = [
+    new RegExp(
+      "(?<=^|[.!?]\\s|\\n|[:\\u2013\\u2014]\\s)No\\s+" + NO_ITEM_STOP + "[a-z'\u2019-]+(?:\\s+" + NO_ITEM_SECOND_STOP + "[a-z'\u2019-]+)?" +
+      "(?:\\s*,\\s*(?:and\\s+|or\\s+|just\\s+)?no\\s+" + NO_ITEM_STOP + "[a-z'\u2019-]+(?:\\s+" + NO_ITEM_SECOND_STOP + "[a-z'\u2019-]+)?){2,}",
+      'gm'
+    ),
+    /\b(?:did\s+not|didn['\u2019]t)\s+[a-z]+[^,.;!?\n]{0,20},\s*(?:did\s+not|didn['\u2019]t)\s+[a-z]+/gi,
+    /\b(?:do\s+not|don['\u2019]t)\s+(?:just\s+)?(\w+)\s+it\b[^.!?\n]{0,60}[.!?;:,][\s'"\u201d\u2019]*(?:just\s+)?\1\s+it\b/gi,
+  ];
+
+  // ─── Dev-blog boilerplate ──────────────────────────────────────────
+  // Stock simplicity slogans from developer marketing. Adapted from
+  // Simon Willison's LLM cliché highlighter.
+  const DEV_BLOG_BOILERPLATE = [
+    /\bit\s+just\s+works\b(?!\s+out\b(?![-\s]+of[-\s]+the[-\s]+box\b))/gi,
+    /\bzero[-\s]config(?:uration)?\b/gi,
+    /\bsane\s+defaults\b/gi,
+    /\b(?:hold|fit|fits|holds)\s+in\s+your\s+head\b/gi,
+  ];
+
+  // Function words whose presence MID-title marks the AI section-header shape.
+  // Word-anchored: without \b the "A" alternative matches inside any word and
+  // the guard silently degrades to "four tokens".
+  const FUNCTION_WORD = /\b(?:And|Or|Of|The|In|For|To|A|An)\b/;
+
+  // Must accept exactly what TITLE_CASE_HEADER accepts, or the prefix survives
+  // into the token count and reintroduces the ##-as-token bug.
+  const MD_HEADING_PREFIX = /^#{1,6}[ \t]+/;
+
+  /** Byte ranges covered by fenced code blocks, computed once per scan.
+   *
+   * A document that documents Markdown is the normal case for this rule -- a
+   * fenced `## Heading` example is illustration, not the author's own section
+   * header, and flagging it makes every docs page flag itself.
+   *
+   * This tracks the opening delimiter instead of counting them, because a
+   * parity count is wrong on the very case the rule exists for. CommonMark
+   * closes a fence only on the same character at the same length or longer, so
+   * a four-backtick fence wrapping a three-backtick example -- exactly how you
+   * document fences -- nests in practice, and counting delimiters inverts on
+   * it. Up to three spaces of indent are legal. An unclosed fence runs to end
+   * of document, matching how renderers treat it.
+   *
+   * Computed once per scan rather than rescanned per hit: the previous version
+   * sliced the whole document for every candidate, which is quadratic on a
+   * heading-dense file. */
+  function fenceRanges(text) {
+    const re = /^[ \t]{0,3}(`{3,}|~{3,})([^\n]*)$/gm;
+    const ranges = [];
+    let open = null;
+    let m;
+    while ((m = re.exec(text)) !== null) {
+      const marker = m[1];
+      if (!open) {
+        open = { char: marker[0], len: marker.length, start: m.index };
+      } else if (
+        marker[0] === open.char &&
+        marker.length >= open.len &&
+        /^[ \t]*\r?$/.test(m[2])
+      ) {
+        ranges.push([open.start, m.index + m[0].length]);
+        open = null;
+      }
+    }
+    if (open) ranges.push([open.start, text.length]);
+
+    return ranges;
+  }
+
+  function inFenceRange(ranges, index) {
+    return typeof index === 'number' && ranges.some(([a, b]) => index >= a && index < b);
+  }
+
+  function blankRange(chars, start, end) {
+    for (let i = start; i < end && i < chars.length; i += 1) {
+      if (chars[i] !== '\n') chars[i] = ' ';
+    }
+  }
+
+  // Copy of the text with fenced blocks and inline code spans blanked out.
+  // Index-preserving: each masked character becomes a space and newlines are
+  // kept, so offsets into the result still address the same position in the
+  // original. For rules where a character inside code is something the author
+  // is quoting rather than using — a `#fff` in a CSS sample is not a tag.
+  // Fences are blanked first so their backticks cannot pair with a later
+  // inline span and swallow the prose between them.
+  function maskCode(text) {
+    const chars = text.split('');
+    for (const [a, b] of fenceRanges(text)) blankRange(chars, a, b);
+    // Indented code blocks are deliberately NOT masked. Four spaces is a code
+    // block only at top level; under a list marker it is a paragraph
+    // continuation, so blanking it silences real tag blocks. #90 reports
+    // fences and inline spans, and those are what this masks.
+    const withoutFences = chars.join('');
+    const inlineRe = /(`+)(?:(?!\1)[^\n])+\1/g;
+    let m;
+    while ((m = inlineRe.exec(withoutFences)) !== null) blankRange(chars, m.index, m.index + m[0].length);
+    return chars.join('');
+  }
+
+  function initialFrontmatterRange(text) {
+    const lines = [];
+    const lineRe = /[^\r\n]*(?:\r\n|\n|\r|$)/g;
+    let match;
+    while ((match = lineRe.exec(text)) !== null && match[0]) {
+      const body = match[0].replace(/(?:\r\n|\n|\r)$/, '');
+      lines.push({ body, start: match.index, end: match.index + body.length });
+    }
+
+    if (lines.length < 3 || !/^---[ \t]*$/.test(lines[0].body.replace(/^\uFEFF/, ''))) return null;
+
+    let closingLine = -1;
+    for (let i = 1; i < lines.length; i += 1) {
+      if (/^---[ \t]*$/.test(lines[i].body)) {
+        closingLine = i;
+        break;
+      }
+    }
+    if (closingLine === -1) return null;
+
+    // A pair of thematic breaks can also surround ordinary Markdown prose.
+    // Require the first substantive line to begin like a YAML mapping entry
+    // before treating the delimited block as frontmatter. Leading blank lines
+    // and YAML comments are valid, and the line parser accepts LF, CRLF, or CR.
+    const yamlKey = /^[ \t]*(?:[A-Za-z0-9_.-]+|"[^"\r\n]+"|'[^'\r\n]+')[ \t]*:/;
+    const firstContent = lines
+      .slice(1, closingLine)
+      .find((line) => line.body.trim() && !/^[ \t]*#/.test(line.body));
+    if (!firstContent || !yamlKey.test(firstContent.body)) return null;
+
+    return { start: 0, end: lines[closingLine].end };
+  }
+
+  // Mask HTML comments in source order while tracking the Markdown constructs
+  // that protect a literal `<!--`. A comment wins over code delimiters that
+  // occur inside it; a fence, code span, or top-level indented block that
+  // starts first wins over comment-looking text inside that code. Each source
+  // character participates in a bounded number of forward scans.
+  function maskHtmlCommentsOutsideCode(chars) {
+    const source = chars.join('');
+    const lines = source.split('\n');
+    let offset = 0;
+    let openFence = null;
+    let inIndentedBlock = false;
+    let previousBlank = true;
+    let listContext = false;
+    let maskedHtmlComments = 0;
+    const commentClosings = [];
+    let closingCursor = 0;
+
+    for (let i = 0; i <= source.length - 3; i += 1) {
+      if (source[i] === '-' && source[i + 1] === '-' && source[i + 2] === '>') {
+        commentClosings.push(i);
+      }
+    }
+
+    const backtickRuns = (line) => {
+      const runs = [];
+      for (let i = 0; i < line.length;) {
+        if (line[i] !== '`') {
+          i += 1;
+          continue;
+        }
+        const start = i;
+        while (i < line.length && line[i] === '`') i += 1;
+        runs.push({ start, end: i, length: i - start, next: -1 });
+      }
+      const nextByLength = new Map();
+      for (let i = runs.length - 1; i >= 0; i -= 1) {
+        runs[i].next = nextByLength.get(runs[i].length) ?? -1;
+        nextByLength.set(runs[i].length, i);
+      }
+      return runs;
+    };
+
+    for (const originalLine of lines) {
+      const lineEnd = offset + originalLine.length;
+      let visibleLine = chars.slice(offset, lineEnd).join('');
+      const fenceMatch = /^[ \t]{0,3}(`{3,}|~{3,})([^\n]*)$/.exec(visibleLine);
+      let fencedLine = false;
+
+      if (openFence) {
+        fencedLine = true;
+        if (
+          fenceMatch
+          && fenceMatch[1][0] === openFence.char
+          && fenceMatch[1].length >= openFence.length
+          && /^[ \t]*\r?$/.test(fenceMatch[2])
+        ) openFence = null;
+      } else if (fenceMatch) {
+        fencedLine = true;
+        openFence = { char: fenceMatch[1][0], length: fenceMatch[1].length };
+      }
+
+      const indented = /^(?: {4}|\t)\S/.test(visibleLine);
+      const indentedCode = !fencedLine
+        && indented
+        && (inIndentedBlock || (previousBlank && !listContext));
+
+      if (!fencedLine && !indentedCode) {
+        const runs = backtickRuns(visibleLine);
+        let runIndex = 0;
+        let cursor = 0;
+
+        while (cursor < visibleLine.length) {
+          while (runIndex < runs.length && runs[runIndex].start < cursor) runIndex += 1;
+          const commentIndex = visibleLine.indexOf('<!--', cursor);
+          const run = runs[runIndex];
+
+          if (run && (commentIndex === -1 || run.start < commentIndex)) {
+            if (run.next !== -1) {
+              cursor = runs[run.next].end;
+              runIndex = run.next + 1;
+            } else {
+              cursor = run.end;
+              runIndex += 1;
+            }
+            continue;
+          }
+          if (commentIndex === -1) break;
+
+          const openingIndex = offset + commentIndex;
+          while (
+            closingCursor < commentClosings.length
+            && commentClosings[closingCursor] < openingIndex + 2
+          ) closingCursor += 1;
+          const closingIndex = commentClosings[closingCursor] ?? -1;
+          const end = closingIndex === -1 ? source.length : closingIndex + 3;
+          if (closingIndex !== -1) closingCursor += 1;
+          blankRange(chars, openingIndex, end);
+          maskedHtmlComments += 1;
+          cursor = Math.min(visibleLine.length, end - offset);
+        }
+      }
+
+      visibleLine = chars.slice(offset, lineEnd).join('');
+      const layoutChars = visibleLine.split('');
+      if (fencedLine) {
+        blankRange(layoutChars, 0, layoutChars.length);
+      } else {
+        const inlineRe = /(`+)(?:(?!\1)[^\n])+\1/g;
+        let inlineMatch;
+        while ((inlineMatch = inlineRe.exec(visibleLine)) !== null) {
+          blankRange(layoutChars, inlineMatch.index, inlineMatch.index + inlineMatch[0].length);
+        }
+      }
+      const layoutLine = layoutChars.join('');
+      const blank = layoutLine.trim() === '';
+
+      if (indentedCode) inIndentedBlock = true;
+      else if (!blank) inIndentedBlock = false;
+
+      if (!blank && !indentedCode && !fencedLine) {
+        if (/^ {0,3}(?:[-*+]|\d{1,9}[.)])(?:\s|$)/.test(layoutLine)) listContext = true;
+        else if (/^\S/.test(layoutLine)) listContext = false;
+      }
+      previousBlank = blank;
+      offset = lineEnd + 1;
+    }
+
+    return maskedHtmlComments;
+  }
+
+  // Mask source-only Markdown spans while preserving source offsets. The
+  // detector can then score what a reader sees without making later issue
+  // indexes or sentence highlights point at the wrong source location.
+  function maskRenderedMarkdown(text) {
+    const chars = text.split('');
+
+    let maskedFrontmatter = 0;
+    const frontmatter = initialFrontmatterRange(text);
+    if (frontmatter) {
+      blankRange(chars, frontmatter.start, frontmatter.end);
+      maskedFrontmatter = 1;
+    }
+
+    const maskedHtmlComments = maskHtmlCommentsOutsideCode(chars);
+
+    return { text: chars.join(''), maskedFrontmatter, maskedHtmlComments };
+  }
+
+  function maskMultilineBlockquotes(text) {
+    const chars = text.split('');
+    const lines = [];
+    const lineRe = /[^\r\n]*(?:\r\n|\n|\r|$)/g;
+    let match;
+    while ((match = lineRe.exec(text)) !== null && match[0]) {
+      const body = match[0].replace(/[\r\n]+$/, '');
+      lines.push({ text: body, start: match.index, end: match.index + body.length });
+    }
+
+    let quotedLines = 0;
+    const isQuote = lines.map((line) => /^\s*>\s/.test(line.text));
+    for (let i = 0; i < lines.length; i += 1) {
+      if (isQuote[i] && ((isQuote[i - 1] && i > 0) || isQuote[i + 1])) {
+        blankRange(chars, lines[i].start, lines[i].end);
+        quotedLines += 1;
+      }
+    }
+
+    return { text: chars.join(''), quotedLines };
+  }
+
+  // Keep the historical deletion behavior for default plain mode. Paragraph-
+  // scoped rules depend on the surrounding lines being rejoined exactly this
+  // way, so changing this prepass would change scores for existing callers.
+  function stripMultilineBlockquotes(text, sourceMap) {
+    const rawLines = text.split(/\r?\n/);
+    const isQuote = rawLines.map((line) => /^\s*>\s/.test(line));
+    const stripIndexes = new Set();
+    for (let i = 0; i < rawLines.length; i += 1) {
+      if (isQuote[i] && ((isQuote[i - 1] && i > 0) || isQuote[i + 1])) stripIndexes.add(i);
+    }
+    const kept = rawLines
+      .map((_, index) => index)
+      .filter((index) => !stripIndexes.has(index));
+    const result = {
+      text: kept.map((index) => rawLines[index]).join('\n'),
+      quotedLines: stripIndexes.size,
+    };
+    if (!Array.isArray(sourceMap)) return result;
+
+    const lineStarts = [];
+    let offset = 0;
+    for (let i = 0; i < rawLines.length; i += 1) {
+      lineStarts.push(offset);
+      offset += rawLines[i].length;
+      if (i < rawLines.length - 1) {
+        if (text[offset] === '\r') offset += 1;
+        if (text[offset] === '\n') offset += 1;
+      }
+    }
+
+    const mapped = [];
+    for (let i = 0; i < kept.length; i += 1) {
+      const lineIndex = kept[i];
+      const start = lineStarts[lineIndex];
+      appendMapRange(mapped, sourceMap, start, start + rawLines[lineIndex].length);
+      if (i < kept.length - 1) {
+        const separatorStart = start + rawLines[lineIndex].length;
+        const newlineIndex = text[separatorStart] === '\r' ? separatorStart + 1 : separatorStart;
+        mapped.push(sourceMap[newlineIndex]);
+      }
+    }
+    return { ...result, sourceMap: mapped };
+  }
+
+  function maskTopLevelIndentedCode(chars, { listAware = false } = {}) {
+    const lines = chars.join('').split('\n');
+    let offset = 0;
+    let inBlock = false;
+    let previousBlank = true;
+    let listContext = false;
+    for (let i = 0; i < lines.length; i += 1) {
+      const line = lines[i];
+      const indented = /^(?: {4}|\t)\S/.test(line);
+      const blank = line.trim() === '';
+      const isCode = indented && (inBlock || (previousBlank && (!listAware || !listContext)));
+      if (isCode) {
+        blankRange(chars, offset, offset + line.length);
+        inBlock = true;
+      } else if (!blank) {
+        inBlock = false;
+      }
+      if (listAware && !blank && !isCode) {
+        if (/^ {0,3}(?:[-*+]|\d{1,9}[.)])(?:\s|$)/.test(line)) listContext = true;
+        else if (/^\S/.test(line)) listContext = false;
+      }
+      previousBlank = blank;
+      offset += line.length + 1;
+    }
+  }
+
+  function maskYamlFrontmatter(chars) {
+    const lines = chars.join('').split('\n');
+    const bare = (line) => line.replace(/\r$/, '');
+    const first = bare(lines[0]).replace(/^\uFEFF/, '');
+    if (first !== '---' || lines.length < 2 || /^\s*$/.test(bare(lines[1]))) return;
+
+    let closingLine = -1;
+    for (let i = 1; i < lines.length; i += 1) {
+      if (bare(lines[i]) === '---') {
+        closingLine = i;
+        break;
+      }
+    }
+    if (closingLine === -1) return;
+
+    let end = 0;
+    for (let i = 0; i <= closingLine; i += 1) {
+      end += lines[i].length;
+      if (i < lines.length - 1) end += 1;
+    }
+    blankRange(chars, 0, end);
+  }
+
+  function maskYamlMetadata(chars) {
+    const lines = chars.join('').split('\n');
+    let offset = 0;
+    let nestedAfterIndent = null;
+    for (const line of lines) {
+      const bare = line.replace(/\r$/, '');
+      // Lowercase keys are the common unfenced-YAML shape. Keeping this
+      // case-sensitive prevents prose labels such as "Note: ..." from being
+      // mistaken for metadata and silencing a real copyedit on the line.
+      const key = bare.match(/^([ \t]*)(?:-[ \t]+)?[a-z_][a-z0-9_.-]*[ \t]*:(.*)$/);
+      const indentation = (bare.match(/^[ \t]*/) || [''])[0].length;
+      let shouldMask = false;
+
+      if (key) {
+        shouldMask = true;
+        nestedAfterIndent = key[2].trim() === '' ? key[1].length : null;
+      } else if (nestedAfterIndent !== null && bare.trim() !== '' && indentation > nestedAfterIndent) {
+        shouldMask = true;
+      } else if (bare.trim() === '') {
+        nestedAfterIndent = null;
+      } else {
+        nestedAfterIndent = null;
+      }
+
+      if (shouldMask) blankRange(chars, offset, offset + line.length);
+      offset += line.length + 1;
+    }
+  }
+
+  function maskMarkdownTables(chars) {
+    const lines = chars.join('').split('\n');
+    const delimiter = /^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*\r?$/;
+    const rows = new Set();
+    for (let i = 0; i < lines.length; i += 1) {
+      if (!delimiter.test(lines[i])) continue;
+      if (i > 0 && lines[i - 1].includes('|')) rows.add(i - 1);
+      rows.add(i);
+      for (let j = i + 1; j < lines.length && lines[j].includes('|'); j += 1) rows.add(j);
+    }
+
+    let offset = 0;
+    for (let i = 0; i < lines.length; i += 1) {
+      if (rows.has(i)) blankRange(chars, offset, offset + lines[i].length);
+      offset += lines[i].length + 1;
+    }
+  }
+
+  function maskDelimitedQuotes(chars, open, close, apostropheAware = false) {
+    const isWord = (char) => char !== undefined && /[a-z0-9]/i.test(char);
+    const isEscaped = (index) => {
+      let slashes = 0;
+      for (let i = index - 1; i >= 0 && chars[i] === '\\'; i -= 1) slashes += 1;
+      return slashes % 2 === 1;
+    };
+    let start = -1;
+    for (let i = 0; i < chars.length; i += 1) {
+      if (start === -1) {
+        if (chars[i] === open && !isEscaped(i) && (!apostropheAware || !isWord(chars[i - 1]))) start = i;
+      } else if (chars[i] === close && !isEscaped(i) && (!apostropheAware || !isWord(chars[i + 1]))) {
+        blankRange(chars, start, i + 1);
+        start = -1;
+      }
+    }
+  }
+
+  // Additional protected spans for the hyphenation copyedit. Unlike general
+  // AI-tell matching, this rule must not "correct" a literal spelling in a
+  // quote, URL, path, filename, command flag, or Markdown blockquote.
+  function maskHyphenationProtected(text) {
+    const chars = maskCode(text).split('');
+    maskTopLevelIndentedCode(chars);
+    maskYamlFrontmatter(chars);
+    maskYamlMetadata(chars);
+    maskMarkdownTables(chars);
+    maskDelimitedQuotes(chars, '"', '"');
+    maskDelimitedQuotes(chars, '“', '”');
+    maskDelimitedQuotes(chars, "'", "'", true);
+    maskDelimitedQuotes(chars, '‘', '’', true);
+    const maskMatches = (regex) => {
+      const source = chars.join('');
+      let match;
+      while ((match = regex.exec(source)) !== null) {
+        blankRange(chars, match.index, match.index + match[0].length);
+      }
+    };
+
+    maskMatches(/^[ \t]*>[^\n]*$/gm);
+    maskMatches(/\b(?:https?:\/\/|www\.)[^\s<>]+/gi);
+    maskMatches(/<[!?/]?[a-z][^>\n]*>/gi);
+    maskMatches(/(?<![a-z0-9_-])--?[a-z0-9][a-z0-9-]{0,127}/gi);
+
+    // Paths and filenames use bounded components. Besides preventing
+    // superlinear backtracking on long kebab blobs, the explicit prefix and
+    // trailing-slash forms cover single-component paths such as C:\\code-base,
+    // ~/code-base, /code-base, and code-base/.
+    maskMatches(/(?:[a-z]:[\\/]|\.{1,2}[\\/]|~[\\/]|[\\/])[a-z0-9_.-]{1,255}/gi);
+    maskMatches(/(?:[a-z]:[\\/]|(?:\.\.?[\\/])?)(?:[a-z0-9_.-]{1,64}[\\/]){1,128}[a-z0-9_.-]{1,64}/gi);
+    maskMatches(/\b[a-z0-9_.]{0,63}-[a-z0-9_.-]{1,64}[\\/]/gi);
+    maskMatches(/\b[a-z0-9_.-]{1,64}-[a-z0-9_.-]{1,64}\.[a-z0-9]{1,16}\b/gi);
+
+    // Technical identifiers that are distinguishable from ordinary prose:
+    // selectors, scoped packages, versioned tokens, assignments, and kebab
+    // names next to an explicit identifier cue. Plain lowercase compounds
+    // remain visible to the curated copyedit patterns below.
+    maskMatches(/[.#][a-z_][a-z0-9_.-]{0,63}-[a-z0-9_.-]{1,64}\b/gi);
+    maskMatches(/@[a-z0-9_.-]{1,64}\/[a-z0-9_.-]{1,64}-[a-z0-9_.-]{1,64}(?:@[^\s,;)\]}]{1,32})?/gi);
+    maskMatches(/\b[a-z0-9_.-]{1,64}-[a-z0-9_.-]{1,64}@[~^]?v?\d[a-z0-9*_.+-]{0,31}\b/gi);
+    maskMatches(/\b(?:[a-z0-9_.-]{0,64}\d[a-z0-9_.-]{0,64}-[a-z0-9_.-]{1,64}|[a-z0-9_.-]{1,64}-[a-z0-9_.-]{0,64}\d[a-z0-9_.-]{0,64})\b/gi);
+    maskMatches(/\b[a-z_][a-z0-9_.]{0,63}(?:-[a-z0-9_.]{1,64}){1,8}(?=[ \t]*[=:])/gi);
+    maskMatches(/\b[a-z_][a-z0-9_.]{0,63}(?:-[a-z0-9_.]{1,64}){1,8}(?=[ \t]+(?:npm[ \t]+)?(?:package|module|class|selector|config(?:uration)?[ \t]+key|key|identifier|property|setting|token|slug|command|option)\b)/gi);
+    maskMatches(/\b(?:(?:file(?:name)?|directory|folder|package|module|class|selector|config(?:uration)?[ \t]+key|identifier|property|setting|token|slug|command|option)(?:[ \t]+(?:named|called|is|was))?|key[ \t]+(?:named|called|is|was))[ \t]+(?:@[a-z0-9_.-]{1,64}\/)?[a-z_][a-z0-9_.]{0,63}(?:-[a-z0-9_.]{1,64}){1,8}\b/gi);
+    maskMatches(/\b(?:npm|pnpm|yarn)[ \t]+(?:add|install)[ \t]+(?:@[a-z0-9_.-]{1,64}\/)?[a-z0-9_.]{1,64}(?:-[a-z0-9_.]{1,64}){1,8}/gi);
+
+    return chars.join('');
+  }
+
+  function findUnnecessaryHyphenation(text) {
+    const scanText = maskHyphenationProtected(text);
+    const issues = [];
+    for (const entry of UNNECESSARY_HYPHENATION) {
+      const regex = new RegExp(entry.pattern.source, entry.pattern.flags);
+      let match;
+      while ((match = regex.exec(scanText)) !== null) {
+        issues.push({
+          type: 'unnecessary-hyphenation',
+          text: match[0],
+          severity: 'medium',
+          suggestion: typeof entry.suggestion === 'function'
+            ? entry.suggestion(match[0])
+            : entry.suggestion,
+        });
+      }
+    }
+    return issues;
+  }
+
+  // ─── Forms that open with `#` but are not social tags ──────────────
+  // `#` is overloaded in technical prose and the hashtag rule counts every
+  // `#word` it sees, so these are subtracted before the threshold applies:
+  //   #88, #1234         issue and PR references
+  //   #1a2b3c            CSS hex colours, 6 or 8 chars AND containing a digit
+  //   #include, #ifndef  C preprocessor directives
+  // Deliberately NOT carving out 3- and 4-digit hex: #dad, #cafe, #b2b, #e2e,
+  // #ace, #face and #bad are real tags, and subtracting them cost true
+  // positives on exactly the stuffed-block shape this rule exists to catch.
+  // Real palettes are dominated by 6-digit values, so a CSS paragraph still
+  // lands under the threshold without the short forms.
+  // `owner/repo#88` and URL fragments need no carve-out: the char before `#`
+  // is a word char, so the rule's own anchor already rejects them.
+  // Ambiguous word tags stay counted on purpose. `#general` as a channel and
+  // `#general` as a tag are the same token, and separating them needs a guess
+  // that costs more precision on real tag blocks than the carve-out buys.
+  // Requires at least one digit: #decade, #facade, #deadbeef are a-f words and
+  // real tags. Every actual palette value in the wild carries a digit.
+  const HEX_COLOUR = /^(?=[0-9a-f]*\d)(?:[0-9a-f]{6}|[0-9a-f]{8})$/i;
+  const CPP_DIRECTIVE = /^(?:include|define|undef|if|ifdef|ifndef|elif|else|endif|pragma|error|warning|line)$/;
+
+  function isSocialTag(tag) {
+    return !/^\d+$/.test(tag) && !HEX_COLOUR.test(tag) && !CPP_DIRECTIVE.test(tag);
+  }
+
   // ─── Title Case Section Headers in non-technical prose ─────────────
   // "Strategic Negotiations And Key Partnerships" — every content word
   // capitalized. Acceptable in API docs, ML papers, news headlines. Tell
-  // in marketing/personal/blog prose. Gated to "personal" / "marketing"
-  // context modes (technical mode skips this check).
-  const TITLE_CASE_HEADER = /^([A-Z][a-z]+(?:\s+(?:[A-Z][a-z]+|and|or|of|the|in|for|to|a|an))+\s+[A-Z][a-z]+)\s*$/gm;
+  // in marketing/personal/blog prose. Skipped when contextMode is
+  // 'technical'; runs for general, marketing, and personal.
+  //
+  // The optional `#{1,6}` prefix is load-bearing (#62): without it the `^[A-Z]`
+  // anchor required the line to START with a capital, so `## Benefits And
+  // Strategic Considerations` never matched — the first character is `#`. The
+  // rule missed the single most common way a heading is actually written, while
+  // catching the bare-line form it is usually converted from. Reported by a
+  // downstream vendoring the detector.
+  //
+  // Setext headings (`Title`/`=====`) need no prefix: their text line is bare
+  // and already matched by this same pattern.
+  const TITLE_CASE_HEADER = /^(?:#{1,6}[ \t]+)?([A-Z][a-z]+(?:\s+(?:[A-Z][a-z]+|and|or|of|the|in|for|to|a|an))+\s+[A-Z][a-z]+)\s*$/gm;
 
   // ─── Parenthetical hedging asides ──────────────────────────────────
   // "(and increasingly, X)", "(or more precisely, Y)", "(though to be
@@ -678,6 +1490,46 @@ const AIDetector = (() => {
     /\bbookmark\s+this(?:\s+(?:one|post|thread))?(?=\s*(?:[:.!\n]|$))/gi,
     /\bdo\s*n['’]?t\s+sleep\s+on\s+this\b/gi,
     /\btrust\s+me,?\s+(?:on\s+this|you['’]?ll)\b/gi,
+  ];
+
+  // ─── Unnecessary hyphenation (#107) ───────────────────────────────
+  // Precision-first subclasses only. The general question of whether a
+  // compound modifier is established English needs editorial judgment and
+  // remains in SKILL.md; the engine covers only curated open/closed forms and
+  // compounds whose surrounding syntax makes the unhyphenated form clear.
+  const UNNECESSARY_HYPHENATION = [
+    // Welded open noun phrases reported in #107. Match the complete phrase so
+    // a project-specific spelling of the pair in another role is not swept in.
+    { pattern: /\bresearch-impact\s+aggregat(?:or|ion)s?\b/g, suggestion: (match) => match.replace('research-impact', 'research impact') },
+    { pattern: /\bdata-source\s+strateg(?:y|ies)\b/g, suggestion: (match) => match.replace('data-source', 'data source') },
+    { pattern: /\bPython-package\s+usage\b/g, suggestion: (match) => match.replace('Python-package', 'Python package') },
+    { pattern: /\bRust-crate\s+usage\b/g, suggestion: (match) => match.replace('Rust-crate', 'Rust crate') },
+    { pattern: /\bsingle-Project\s+Manifest\b/g, suggestion: (match) => match.replace('single-Project', 'single Project') },
+    { pattern: /\btotal-downloads\s+figures?\b/g, suggestion: (match) => match.replace('total-downloads', 'total downloads') },
+    { pattern: /\blife-sciences-native\s+citation\s+count\b/g, suggestion: 'citation count from a life sciences source' },
+
+    // Compounds whose standard spelling is closed. Kept as a small curated
+    // list rather than guessing that every noun-noun pair should close up.
+    { pattern: /\bcode-base\b/g, suggestion: (match) => match.replace('-', '') },
+    { pattern: /\bdata-set\b/g, suggestion: (match) => match.replace('-', '') },
+    { pattern: /\btime-frame\b/g, suggestion: (match) => match.replace('-', '') },
+    { pattern: /\broad-map\b/g, suggestion: (match) => match.replace('-', '') },
+
+    // Attributive-only forms used adverbially or as nouns. The boundary after
+    // real-time / long-term is intentionally narrow: "real-time analytics"
+    // and "long-term plan" must not fire.
+    {
+      pattern: /\bin\s+real-time(?=\s*(?:[,.!?;:]|$)|\s+(?:(?:across|as|automatically|because|but|continuously|during|dynamically|every|for|from|immediately|instantly|on|simultaneously|through|throughout|until|via|when|while|with|without)\b))/gi,
+      suggestion: 'in real time',
+    },
+    {
+      pattern: /\b(?:for|over)\s+the\s+long-term(?=\s*(?:[,.!?;:]|$)|\s+(?:across|because|but|by|during|for|from|on|through|throughout|until|via|when|while|with|without)\b)/gi,
+      suggestion: (match) => match.replace(/long-term/i, 'long term'),
+    },
+    {
+      pattern: /\b(?:functions?|functioned|functioning|operates?|operated|operating|runs?|ran|running|works?|worked|working)\s+out-of-the-box\b/gi,
+      suggestion: (match) => match.replace(/out-of-the-box/i, 'out of the box'),
+    },
   ];
 
   // ═══ Helpers ═══════════════════════════════════════════════════════
@@ -750,14 +1602,19 @@ const AIDetector = (() => {
       return { ...buildV2Defaults('UNSCORED', 'low'), score: 0, label: 'Empty', issues: [], stats: {}, tooShort: true };
     }
 
-    // Context mode gates rules that are noisy in technical writing. Modes:
+    // Map each working-string code unit back to the caller's source. Every
+    // length-changing preprocessing stage composes this map as it removes
+    // characters, and results are translated before they leave the function.
+    let sourceMap = identitySourceMap(text.length);
+
+    // Context mode selects context-appropriate flagging. Accepted values:
     //   'general' (default) — full ruleset
-    //   'technical' — skip title-case headers, formulaic openers gated to
-    //                 prose-only structures; lower em-dash + formatting weights
-    //   'marketing' — full ruleset + boost on formulaic-opener / future-narrative
-    //   'personal'  — full ruleset, normal weights
-    // Mode is purely a soft gate; nothing is silently suppressed without
-    // being reflected in stats.contextMode for transparency.
+    //   'technical' — skip title-case headers; individual prose-only rules
+    //                 apply their own technical-context gates (only mode
+    //                 that currently changes scoring)
+    //   'marketing' — accepted; recorded in stats; scores same as general
+    //   'personal'  — accepted; recorded in stats; scores same as general
+    // Invalid values fall back to 'general' with stats.contextModeFallback set.
     // Mode validation: an unknown string (e.g. typo "tecnical") would
     // otherwise silently downgrade to general-mode behavior. Coerce to
     // 'general' and surface the original value in stats for traceability.
@@ -766,32 +1623,53 @@ const AIDetector = (() => {
     const contextMode = VALID_CONTEXT_MODES.has(requestedMode) ? requestedMode : 'general';
     const contextModeFallback = requestedMode !== contextMode ? requestedMode : null;
 
-    // Pre-pass: strip Markdown blockquotes before scoring. A human
+    // Source mode controls which parts of a Markdown file count as prose.
+    // Plain remains the compatibility default. Rendered Markdown masks only
+    // initial YAML frontmatter and HTML comments; source-hygiene checks for
+    // hidden TODO/placeholder comments remain available through plain mode.
+    const VALID_SOURCE_MODES = new Set(['plain', 'rendered-markdown']);
+    const requestedSourceMode = options.sourceMode === undefined ? 'plain' : options.sourceMode;
+    const sourceMode = VALID_SOURCE_MODES.has(requestedSourceMode) ? requestedSourceMode : 'plain';
+    const sourceModeFallback = requestedSourceMode !== sourceMode ? requestedSourceMode : undefined;
+    let maskedFrontmatter = 0;
+    let maskedHtmlComments = 0;
+    if (sourceMode === 'rendered-markdown') {
+      const rendered = maskRenderedMarkdown(text);
+      text = rendered.text;
+      maskedFrontmatter = rendered.maskedFrontmatter;
+      maskedHtmlComments = rendered.maskedHtmlComments;
+    }
+
+    // Pre-pass: mask Markdown blockquotes before scoring. A human
     // reacting to AI text by quoting it shouldn't have the quoted block
     // counted against their own writing. Requires ≥2 consecutive `> `
     // lines to count as a blockquote — single-line `> ls -la` shell
-    // prompts in technical docs stay in the text.
-    let quotedLines = 0;
-    const rawLines = text.split(/\r?\n/);
-    const isQuote = rawLines.map((l) => /^\s*>\s/.test(l));
-    const stripIdx = new Set();
-    for (let i = 0; i < rawLines.length; i++) {
-      if (isQuote[i] && ((isQuote[i - 1] && i > 0) || isQuote[i + 1])) {
-        stripIdx.add(i);
-        quotedLines++;
-      }
-    }
-    text = rawLines.filter((_, i) => !stripIdx.has(i)).join('\n');
+    // prompts in technical docs stay in the text. Masking instead of deleting
+    // keeps later issue and highlight offsets aligned with the source file.
+    const blockquotes = sourceMode === 'rendered-markdown'
+      ? maskMultilineBlockquotes(text)
+      : stripMultilineBlockquotes(text, sourceMap);
+    text = blockquotes.text;
+    if (blockquotes.sourceMap) sourceMap = blockquotes.sourceMap;
+    const { quotedLines } = blockquotes;
 
     // Pre-pass: strip bypass-trick chars before pattern matching so
-    // "delve" with a Cyrillic 'е' still hits Tier 1. Original text is
-    // preserved so reported `match.index` values remain visually accurate.
-    const norm = normalizeText(text);
+    // "delve" with a Cyrillic 'е' still hits Tier 1. Compose the map while
+    // deleting characters so later offsets still address the source.
+    const norm = normalizeText(text, sourceMap);
     text = norm.text;
+    sourceMap = norm.sourceMap;
 
     const wordCount = countWords(text);
     if (wordCount < 10) {
-      return { ...buildV2Defaults('UNSCORED', 'low'), score: 0, label: 'Too short', issues: [], stats: { wordCount, contextMode, contextModeFallback }, tooShort: true };
+      return {
+        ...buildV2Defaults('UNSCORED', 'low'),
+        score: 0,
+        label: 'Too short',
+        issues: [],
+        stats: { wordCount, contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments },
+        tooShort: true,
+      };
     }
     if (wordCount > MAX_WORDS) {
       return {
@@ -799,7 +1677,7 @@ const AIDetector = (() => {
         score: 0,
         label: 'Text too long',
         issues: [],
-        stats: { wordCount, contextMode, contextModeFallback },
+        stats: { wordCount, contextMode, contextModeFallback, sourceMode, sourceModeFallback, maskedFrontmatter, maskedHtmlComments },
         tooLong: true,
       };
     }
@@ -813,7 +1691,7 @@ const AIDetector = (() => {
     // ── 1. Tier 1 words ──────────────────────────────────────────
     const tier1Found = new Set();
     for (const token of tokens) {
-      if (TIER1[token] && !tier1Found.has(token)) {
+      if (Object.hasOwn(TIER1, token) && !tier1Found.has(token)) {
         tier1Found.add(token);
         issues.push({
           type: 'tier1',
@@ -835,9 +1713,11 @@ const AIDetector = (() => {
         if (tier1Found.has(lower)) continue;
         tier1Found.add(lower);
         issues.push({
-          type: 'tier1',
+          // Clarity-band entries are wordiness edits, not frequency evidence.
+          // Same fix, weaker claim — see the Tier 1A/1B split in SKILL.md.
+          type: phrase.clarity ? 'tier1-clarity' : 'tier1',
           text: match[0],
-          severity: 'high',
+          severity: phrase.clarity ? 'medium' : 'high',
           suggestion: phrase.replace,
         });
       }
@@ -850,7 +1730,7 @@ const AIDetector = (() => {
       const found = [];
       const suggestions = {};
       for (const token of paraTokens) {
-        if (TIER2[token] && !found.includes(token)) {
+        if (Object.hasOwn(TIER2, token) && !found.includes(token)) {
           found.push(token);
           suggestions[token] = TIER2[token];
         }
@@ -910,6 +1790,7 @@ const AIDetector = (() => {
     issues.push(...matchPatterns(text, VAGUE_ATTRIBUTIONS, 'vague-attribution', 'critical'));
     issues.push(...matchPatterns(text, HOLLOW_INTENSIFIERS, 'hollow-intensifier', 'medium'));
     issues.push(...matchPatterns(text, EMOTIONAL_FLATLINE, 'emotional-flatline', 'low'));
+    issues.push(...matchPatterns(text, LINGERING_ATTENTION, 'lingering-attention', 'medium'));
     issues.push(...matchPatterns(text, NOVELTY_INFLATION, 'novelty-inflation', 'medium'));
     issues.push(...matchPatterns(text, CUTOFF_DISCLAIMERS, 'cutoff-disclaimer', 'critical'));
     issues.push(...matchPatterns(text, AI_PLACEHOLDERS, 'ai-placeholder', 'critical'));
@@ -922,10 +1803,17 @@ const AIDetector = (() => {
     issues.push(...matchPatterns(text, FUTURE_NARRATIVE, 'future-narrative', 'high'));
     issues.push(...matchPatterns(text, REAL_ACTUAL_INFLATION, 'real-actual-inflation', 'medium'));
     issues.push(...matchPatterns(text, SOCIAL_CTA_CLOSER, 'social-cta-closer', 'high'));
+    issues.push(...matchPatterns(text, PERFORMED_INSIGHT, 'performed-insight', 'medium'));
+    issues.push(...matchPatterns(text, NEGATION_CHAIN, 'negation-chain', 'high'));
+    issues.push(...matchPatterns(text, DEV_BLOG_BOILERPLATE, 'dev-blog-boilerplate', 'medium'));
+    issues.push(...findUnnecessaryHyphenation(text));
 
     // ── Tier 1 v2: formulaic openers + parenthetical hedges ──────────
     issues.push(...matchPatterns(text, FORMULAIC_OPENERS, 'formulaic-opener', 'high'));
     issues.push(...matchPatterns(text, SPECULATIVE_OPENERS, 'speculative-opener', 'high'));
+    issues.push(...matchPatterns(text, LAUNCH_INTROS, 'launch-intro', 'high'));
+    issues.push(...matchPatterns(text, CROWD_CONTRAST, 'crowd-contrast', 'medium'));
+    issues.push(...matchPatterns(text, FAKE_CASUAL_PROPS, 'fake-casual-prop', 'high'));
     issues.push(...matchPatterns(text, PARENTHETICAL_HEDGE, 'parenthetical-hedge', 'medium'));
 
     // Title-case headers — gated to marketing/personal/general modes
@@ -935,11 +1823,34 @@ const AIDetector = (() => {
       // Drop matches that look like proper-noun titles (single line, all
       // tokens capitalized incl. function words) — that's headline style,
       // not the AI-section-header tell which has mid-sentence "And".
+      //
+      // The prefix strip is load-bearing. matchPatterns reports match[0], so a
+      // Markdown hit arrives as "## Terms Of Service" and `##` counts as a
+      // token — silently lowering this guard from four content words to three
+      // for headings only, which is exactly the class it exists to protect.
+      // "## Terms Of Service", "## Bank Of America" and "## Table Of Contents"
+      // all flagged as a result: ordinary human headings, on a detector whose
+      // stated first priority is not firing on human writing.
       const filtered = titleHits.filter((h) => {
-        const tokens = h.text.split(/\s+/);
-        return tokens.length >= 4 && /\b(?:And|Or|Of|The|In|For|To|A|An)\b/.test(h.text);
+        const title = h.text.replace(MD_HEADING_PREFIX, '');
+        const tokens = title.trim().split(/\s+/);
+        if (tokens.length < 4) return false;
+
+        // The function word must be MID-title, which is what the comment above
+        // has always said and what the test never enforced. A leading "The"
+        // satisfied a bare /\bThe\b/, so ordinary human headings flagged:
+        // "## The New Security Landscape", "## The Microsoft Approach to
+        // Identity", "### The Four Keys to a Successful and Secure Modern
+        // Workplace". Measured across 81 files that provably predate LLMs
+        // (2018-19 eBooks, 2020 posts): 13 false positives, every one opening
+        // with "The", against zero on main.
+        //
+        // "## Benefits And Strategic Considerations" -- the actual tell, and
+        // this rule's own fixture -- is untouched: its "And" is interior.
+        return FUNCTION_WORD.test(tokens.slice(1).join(' '));
       });
-      issues.push(...filtered);
+      const fences = filtered.length ? fenceRanges(text) : [];
+      issues.push(...filtered.filter((h) => !inFenceRange(fences, h.index)));
     }
 
     // ── Normalization-trigger flag ───────────────────────────────────
@@ -969,7 +1880,18 @@ const AIDetector = (() => {
     // dash ("- **Term** — desc", "- [label](url) — desc") — are
     // definition-list typography, not prose punctuation. Shared by the
     // smart-punct signature below and the em-dash frequency check (§22).
-    const SEPARATOR_DASH_RE = /^\s*(?:[-*+]|\d+[.)])\s+(?:\*\*[^*\n]+\*\*|\[[^\]\n]+\]\([^)\n]*\))[ \t]*—/gm;
+    // An optional parenthetical or inline-code span may sit between the bold
+    // lead term and the dash — "- **Lingering-attention claims**
+    // (`lingering-attention`) — the share-post frame…" is the same definition
+    // typography as the bare form. Found by the self-scan (see PROOF.md, #67).
+    const SEPARATOR_DASH_RE = /^\s*(?:[-*+]|\d+[.)])\s+(?:\*\*[^*\n]+\*\*|\[[^\]\n]+\]\([^)\n]*\))(?:[ \t]*(?:\([^)\n]*\)|`[^`\n]+`))?[ \t]*—/gm;
+
+    // Keep-a-Changelog version headings (`## [3.21.0] — 2026-07-30`) join a
+    // label to a value exactly as a list separator does. Deliberately narrow:
+    // a bracketed or bare semver token, then a dash, then an ISO date, and
+    // nothing else on the line. Ordinary prose dashes in headings still count,
+    // because SKILL.md applies the em-dash rule to headings too.
+    const VERSION_HEADING_DASH_RE = /^#{1,6}[ \t]+\[?v?\d+\.\d+\.\d+[^\]\n]*\]?[ \t]*—[ \t]*\d{4}-\d{2}-\d{2}[ \t]*$/gm;
 
     // ── Smart-punctuation co-occurrence signature ────────────────────
     // Curly quotes + em-dash + Oxford comma all present + zero typos
@@ -981,7 +1903,8 @@ const AIDetector = (() => {
     {
       const hasCurly = /[“”‘’]/.test(text);
       const totalEmDashes = (text.match(/—/g) || []).length;
-      const separatorEmDashes = (text.match(SEPARATOR_DASH_RE) || []).length;
+      const separatorEmDashes = (text.match(SEPARATOR_DASH_RE) || []).length
+        + (text.match(VERSION_HEADING_DASH_RE) || []).length;
       const hasEmDash = totalEmDashes > separatorEmDashes;
       const oxfordHit = text.match(/\b\w+,\s+\w+,\s+and\s+\w+/g);
       const hasOxford = (oxfordHit?.length || 0) >= 1;
@@ -1187,7 +2110,11 @@ const AIDetector = (() => {
     // Earlier char class `[\s\\]` had a literal backslash and silently
     // missed hashtags after sentence punctuation; an interim `[\s]` fix
     // on origin only caught whitespace-preceded tags.
-    const hashtagMatches = text.match(/(?:^|\W)#\w[\w-]*/g) || [];
+    // Code is masked and non-tag `#` forms are subtracted first — see maskCode
+    // and isSocialTag. Without them a changelog paragraph citing six issue
+    // numbers, or a palette listing six hex colours, scored as a tag block.
+    const hashtagMatches = [...maskCode(text).matchAll(/(?:^|\W)#(\w[\w-]*)/g)]
+      .filter((m) => isSocialTag(m[1]));
     if (hashtagMatches.length >= 6) {
       issues.push({
         type: 'hashtag-stuff',
@@ -1292,7 +2219,8 @@ const AIDetector = (() => {
     // and still counts, as does a mid-sentence "**bold** — like this"
     // splice. Em dash only — the `--` substitute is never carved out.
     const rawEmDashCount = (text.match(/—|(?<=\s)--(?=\s|$)|(?<=^|\s)--(?=\s)/gm) || []).length;
-    const separatorDashCount = (text.match(SEPARATOR_DASH_RE) || []).length;
+    const separatorDashCount = (text.match(SEPARATOR_DASH_RE) || []).length
+      + (text.match(VERSION_HEADING_DASH_RE) || []).length;
     const emDashCount = rawEmDashCount - separatorDashCount;
     const emDashRate = emDashCount / (wordCount / 1000);
     if (emDashRate > 1) {
@@ -1403,7 +2331,7 @@ const AIDetector = (() => {
     // merge adjacent flagged sentences into contiguous regions for UI
     // highlighting. Borrowed from GPTZero's sentence-highlighting model
     // — gives users "this paragraph is AI" rather than scattered hits.
-    const regions = buildSentenceRegions(text, deduped);
+    const regions = buildSentenceRegions(text, deduped, sourceMode === 'rendered-markdown');
 
     // Stats derived from the same deduped list so tier counts + patternCount
     // sum to `deduped.length`. Previously patternCount subtracted
@@ -1440,6 +2368,11 @@ const AIDetector = (() => {
       denseAIVocab,
     });
 
+    // Translate both dense issue indexes and half-open highlight boundaries.
+    // Mapping the region end from its final retained code unit avoids pulling
+    // a later removed roleplay marker into the highlighted source slice.
+    remapFindingsToSource(deduped, regions, sourceMap);
+
     return {
       // Legacy fields preserved for existing callers.
       score: normalizedScore,
@@ -1455,6 +2388,10 @@ const AIDetector = (() => {
         patternCount: deduped.length - tier1Count - tier2Count - tier3Count,
         contextMode,
         contextModeFallback,
+        sourceMode,
+        sourceModeFallback,
+        maskedFrontmatter,
+        maskedHtmlComments,
         normalization: norm.flags,
         quotedLines,
         unmappedHighlights: regions._unmapped ?? 0,
@@ -1471,27 +2408,37 @@ const AIDetector = (() => {
 
   // ═══ Sentence regions + trinary classifier ═════════════════════════
 
-  function buildSentenceRegions(text, issues) {
-    // Split text into sentences with byte offsets preserved so the UI
+  function buildSentenceRegions(text, issues, trimBoundaryWhitespace = false) {
+    // Split text into sentences with source offsets preserved so the UI
     // can highlight spans accurately. Sentence boundaries are coarse
     // (.!?) — fine for highlighting, not for linguistic correctness.
     const sentences = [];
     const sentenceRe = /[^.!?]+[.!?]+|\S[^.!?]*$/g;
     let m;
     while ((m = sentenceRe.exec(text)) !== null) {
-      const trimmed = m[0].trim();
-      if (trimmed.length < 4) continue;
-      sentences.push({ start: m.index, end: m.index + m[0].length, text: trimmed });
+      const sentenceText = m[0].trim();
+      if (sentenceText.length < 4) continue;
+      let start = m.index;
+      let end = m.index + m[0].length;
+      if (trimBoundaryWhitespace) {
+        start += m[0].search(/\S/);
+        end -= m[0].match(/\s*$/)[0].length;
+      }
+      sentences.push({ start, end, text: sentenceText });
     }
     if (sentences.length === 0) return [];
 
-    // Map issue.text back to sentence indexes via substring search. Issues
-    // without a meaningful text (e.g. summary signals like "Punctuation
-    // density uniform across paragraphs") have no sentence anchor — they
-    // contribute to the document-level signal but not to highlights.
+    // Map issue.text back to sentence indexes via substring search. Two
+    // kinds of issue stay out of the AI-highlight regions. Summary signals
+    // like "Punctuation density uniform across paragraphs" have no sentence
+    // anchor — they contribute to the document-level signal but not to
+    // highlights. Zero-weight style copyedits (unnecessary-hyphenation) do
+    // have an anchor, but they are P2 grammar cleanup rather than evidence
+    // of machine authorship, so they belong in issues[] and nowhere near a
+    // field reserved for AI sentence highlights.
     // Filter by issue TYPE not text-regex: text-based filtering used to
     // drop legitimate phrase issues containing "across" / "density".
-    const SUMMARY_ONLY_TYPES = new Set([
+    const NON_HIGHLIGHT_TYPES = new Set([
       'punct-distribution',
       'cross-para-burstiness',
       'fnword-trigram-entropy',
@@ -1505,13 +2452,14 @@ const AIDetector = (() => {
       'tier3-phrase-cluster',
       'hashtag-stuff',
       'bullet-np-list',
+      'unnecessary-hyphenation',
     ]);
     const hits = sentences.map(() => ({ count: 0, weight: 0 }));
     const lowerText = text.toLowerCase();
     let unmappedHighlights = 0;
     for (const issue of issues) {
       if (!issue.text || issue.text.length > 200) continue;
-      if (SUMMARY_ONLY_TYPES.has(issue.type)) continue;
+      if (NON_HIGHLIGHT_TYPES.has(issue.type)) continue;
       const needle = issue.text.toLowerCase();
       let idx = 0;
       let matched = false;
@@ -1698,6 +2646,7 @@ const AIDetector = (() => {
 
   const TYPE_LABELS = {
     'tier1': 'AI vocabulary',
+    'tier1-clarity': 'Wordiness',
     'tier2': 'Word cluster',
     'tier3': 'Overused word',
     'transition': 'AI transition',
@@ -1712,6 +2661,7 @@ const AIDetector = (() => {
     'vague-attribution': 'Vague attribution',
     'hollow-intensifier': 'Hollow intensifier',
     'emotional-flatline': 'Emotional flatline',
+    'lingering-attention': 'Lingering-attention claim',
     'novelty-inflation': 'Novelty inflation',
     'cutoff-disclaimer': 'Cutoff disclaimer',
     'template-phrase': 'Template phrase',
@@ -1731,6 +2681,9 @@ const AIDetector = (() => {
     'social-cta-closer': 'Engagement-bait closer',
     'formulaic-opener': 'Formulaic opener',
     'speculative-opener': 'Speculative scenario opener',
+    'launch-intro': 'Launch-copy introduction',
+    'crowd-contrast': 'Dramatized crowd contrast',
+    'fake-casual-prop': 'Fake-casual prop',
     'title-case-header': 'Title Case header',
     'parenthetical-hedge': 'Parenthetical hedge',
     'smart-punct-signature': 'Smart-punct signature',
@@ -1742,6 +2695,10 @@ const AIDetector = (() => {
     'ai-placeholder': 'Unfilled placeholder',
     'ai-citation-markup': 'Chatbot citation markup leak',
     'ai-utm-source': 'AI-tool URL parameter',
+    'unnecessary-hyphenation': 'Unnecessary hyphenation',
+    'performed-insight': 'Performed-insight phrase',
+    'negation-chain': 'Negation chain',
+    'dev-blog-boilerplate': 'Dev-blog boilerplate',
   };
 
   return {
