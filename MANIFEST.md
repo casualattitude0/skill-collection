@@ -118,7 +118,7 @@ the row back to `enabled` plus a `sync.sh` run restores it.
 | to-tickets | mattpocock-skills/to-tickets | enabled |  |
 | triage | mattpocock-skills/triage | enabled |  |
 | wayfinder | mattpocock-skills/wayfinder | enabled |  |
-| writing-great-skills | mattpocock-skills/writing-great-skills | enabled |  |
+| writing-for-agents | mattpocock-skills/writing-for-agents | enabled | upstream renamed writing-great-skills → writing-for-agents on 2026-09-13 sync; now model-invoked |
 | playwright-cli | microsoft-playwright-cli/playwright-cli | enabled | kept as the general browser driver over playwright-generate-test |
 | agent-reach | panniantong-agent-reach/agent-reach | enabled |  |
 | impeccable | pbakaus-impeccable/impeccable | enabled | kept over frontend-design — process and tooling, complementary to typeui-fundamentals |
