@@ -316,6 +316,7 @@ rather than a pin. All of them live in `casualattitude0-skill-collection/`.
 
 | Skill | Last updated | Purpose |
 |-------|--------------|---------|
+| `kickoff` | 2026-10-03 | `/kickoff <task>` — drafts a four-slot brief (task, end state, stop conditions, time budget), confirms it in one round of questions, then runs to the end state against a checklist file: report-and-continue, pause only on stop conditions or destructive actions, evidence-checked subagents for wide work. User-invoked only |
 | `cross-model-image` | 2026-09-27 | Generate or edit a raster image with GPT-6-Sol at `xhigh` through Codex's built-in image tool — labeled brief, one held thread, every output opened and checked by Claude, accepted file placed in the project |
 | `cross-model-delegate` | 2026-09-13 | Hand a bounded task to Codex over `codex exec` — written brief, one held thread, sandbox picked from the task's boundaries, result verified by Claude before it is reported |
 | `cross-model-review` | 2026-07-31 | Adversarial plan review by a second model — drives Codex (or another frontier CLI) over one held session until both reach consensus, then stamps the plan. Ships a Stop hook that refuses to end a turn while an unstamped plan exists, so the review does not depend on remembering it ([setup](casualattitude0-skill-collection/cross-model-review/INSTALL.md)) |

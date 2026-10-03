@@ -45,6 +45,7 @@ the row back to `enabled` plus a `sync.sh` run restores it.
 | github-pr-merge | casualattitude0-skill-collection/github-pr-merge | enabled |  |
 | github-pr-workflow | casualattitude0-skill-collection/github-pr-workflow | enabled |  |
 | github-pr-workflow-only | casualattitude0-skill-collection/github-pr-workflow-only | enabled |  |
+| kickoff | casualattitude0-skill-collection/kickoff | enabled | user-invoked only (no always-on description) — pre-task brief plus a run-to-end-state contract; distinct from grilling (stress-tests a plan), lean-build (scope discipline) and verify-and-stop (proof of finished work) |
 | local-transcribe | casualattitude0-skill-collection/local-transcribe | enabled |  |
 | localizer-ja | casualattitude0-skill-collection/localizer-ja | enabled | no overlap with the humanizer skills — those de-AI Chinese/English prose, this localizes into Japanese |
 | model-selection | casualattitude0-skill-collection/model-selection | enabled |  |
