@@ -48,6 +48,7 @@ the row back to `enabled` plus a `sync.sh` run restores it.
 | local-transcribe | casualattitude0-skill-collection/local-transcribe | enabled |  |
 | localizer-ja | casualattitude0-skill-collection/localizer-ja | enabled | no overlap with the humanizer skills — those de-AI Chinese/English prose, this localizes into Japanese |
 | model-selection | casualattitude0-skill-collection/model-selection | enabled |  |
+| prompt-debt | casualattitude0-skill-collection/prompt-debt | enabled | audits rule-by-rule inside instruction files — no overlap with skill-curator (which skills to enable) or skill-verdict (is one skill fit to ship) |
 | showcase-writer | casualattitude0-skill-collection/showcase-writer | enabled |  |
 | skill-curator | casualattitude0-skill-collection/skill-curator | enabled |  |
 | skill-verdict | casualattitude0-skill-collection/skill-verdict | enabled |  |
