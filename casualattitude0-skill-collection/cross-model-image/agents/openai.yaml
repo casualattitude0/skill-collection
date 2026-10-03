@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cross-model Image"
+  short_description: "Generate images with GPT that match the user's request"
+  default_prompt: "Use $cross-model-image to generate or edit this image with GPT-6-Sol, preserve my requirements and reference details, and inspect and correct the result against my original request."

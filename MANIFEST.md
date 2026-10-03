@@ -39,6 +39,7 @@ the row back to `enabled` plus a `sync.sh` run restores it.
 | typeui-fundamentals | bergside-typeui/typeui-fundamentals | enabled | kept over frontend-design — principles and WCAG reference, complementary to impeccable |
 | commitify | casualattitude0-skill-collection/commitify | enabled |  |
 | cross-model-delegate | casualattitude0-skill-collection/cross-model-delegate | enabled | hands a bounded task to Codex and verifies the result — distinct from cross-model-review (findings and a stamp) and cross-model-discuss (dialogue) |
+| cross-model-image | casualattitude0-skill-collection/cross-model-image | enabled | generates or edits images with GPT-6-Sol over Codex and inspects them — distinct from cross-model-delegate (non-image tasks) and from code-native graphics (algorithmic-art, canvas-design) |
 | cross-model-review | casualattitude0-skill-collection/cross-model-review | enabled | reviews plans pre-implementation via a second model — no overlap with the code-diff reviewers |
 | git-hot-fix | casualattitude0-skill-collection/git-hot-fix | enabled |  |
 | github-pr-merge | casualattitude0-skill-collection/github-pr-merge | enabled |  |
