@@ -1,6 +1,7 @@
 ---
 name: showcase-writer
-description: Turn raw, unwritten material about your own work — what you did, the context, the outcome — into polished self-presentation: resume bullets, interview stories, LinkedIn blurbs, portfolio hooks. Gathers the missing facts first, picks a framework (XYZ, STAR/CAR, BLUF), returns 2–3 labeled variations. Use when the user describes work and needs it written up. Not for expanding an already-written bullet into a long-form case study — that is portfolio-case-study-writer.
+description: >-
+  Turn raw, unwritten material about your own work — what you did, the context, the outcome — into polished self-presentation: resume bullets, interview stories, LinkedIn blurbs, portfolio hooks. Gathers the missing facts first, picks a framework (XYZ, STAR/CAR, BLUF), returns 2–3 labeled variations. Use when the user describes work and needs it written up. Not for expanding an already-written bullet into a long-form case study — that is portfolio-case-study-writer.
 allowed-tools:
   - AskUserQuestion
   - Read

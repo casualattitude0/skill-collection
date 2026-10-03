@@ -1,6 +1,7 @@
 ---
 name: github-pr-merge
-description: Ship a branch with no review gate at all — opens the pull request and merges it immediately through `gh`. Use when asked to merge branch X into branch Y, ship a branch, or open and merge a PR with nobody reviewing it. Not review-gated: for a single review pass use github-pr-workflow-only; to have failures repaired and re-checked use github-pr-workflow.
+description: >-
+  Ship a branch with no review gate at all — opens the pull request and merges it immediately through `gh`. Use when asked to merge branch X into branch Y, ship a branch, or open and merge a PR with nobody reviewing it. Not review-gated: for a single review pass use github-pr-workflow-only; to have failures repaired and re-checked use github-pr-workflow.
 license: MIT
 metadata:
   author: skill-collection
