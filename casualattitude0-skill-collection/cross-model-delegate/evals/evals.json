@@ -1,0 +1,58 @@
+{
+  "skill_name": "cross-model-delegate",
+  "evals": [
+    {
+      "id": 0,
+      "kind": "trigger",
+      "name": "fires-on-delegate-to-codex",
+      "prompt": "Delegate writing the migration script to Codex and check its work when it's done.",
+      "expect_trigger": true
+    },
+    {
+      "id": 1,
+      "kind": "trigger",
+      "name": "fires-on-gpt-does-the-work",
+      "prompt": "Have GPT draft the API docs for this module; I want you to hand it off rather than write them yourself.",
+      "expect_trigger": true
+    },
+    {
+      "id": 2,
+      "kind": "trigger",
+      "name": "stays-quiet-on-plan-review",
+      "prompt": "Adversarially review this implementation plan with Codex and stamp it when you both agree.",
+      "expect_trigger": false
+    },
+    {
+      "id": 3,
+      "kind": "trigger",
+      "name": "stays-quiet-on-debate",
+      "prompt": "Have Codex and Claude debate whether we should use webhooks or polling.",
+      "expect_trigger": false
+    },
+    {
+      "id": 4,
+      "kind": "golden",
+      "name": "brief-thread-verify",
+      "prompt": "Delegate adding input validation to src/forms.ts to Codex.",
+      "expected_output": "A written brief with task, context, boundaries, and a checkable done-condition; one Codex thread opened with an explicit model id and resumed for every follow-up; the diff and tests checked by the principal; a report naming the model, thread id, and any unmet item.",
+      "assertions": [
+        { "text": "Writes the brief to a file with task, context, editable paths, and a checkable done-condition before calling Codex" },
+        { "text": "Chooses workspace-write for a task whose deliverable is edits, and passes an explicit model id" },
+        { "text": "Captures the thread id from round one and resumes that same id for corrections" },
+        { "text": "Verifies the delegate's claims by reading the diff or running tests rather than accepting its report" },
+        { "text": "Reports model, thread id, what was verified, and what remains unmet" }
+      ]
+    },
+    {
+      "id": 5,
+      "kind": "golden",
+      "name": "missing-codex-is-not-simulated",
+      "prompt": "Hand this refactor to GPT.",
+      "expected_output": "If the Codex CLI is missing or unauthenticated, the run reports that and offers to do the work itself or via a Claude subagent, without inventing a delegate response.",
+      "assertions": [
+        { "text": "Checks the executable and authentication before attributing any output to Codex" },
+        { "text": "Does not fabricate or paraphrase a delegate result when the CLI is unavailable" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cross-model Delegate"
+  short_description: "Hand a bounded task to Codex and verify the result"
+  default_prompt: "Use $cross-model-delegate to hand this task to Codex, then verify what comes back."

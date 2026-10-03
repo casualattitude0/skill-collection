@@ -316,6 +316,7 @@ rather than a pin. All of them live in `casualattitude0-skill-collection/`.
 
 | Skill | Last updated | Purpose |
 |-------|--------------|---------|
+| `cross-model-delegate` | 2026-09-13 | Hand a bounded task to Codex over `codex exec` — written brief, one held thread, sandbox picked from the task's boundaries, result verified by Claude before it is reported |
 | `cross-model-review` | 2026-07-31 | Adversarial plan review by a second model — drives Codex (or another frontier CLI) over one held session until both reach consensus, then stamps the plan. Ships a Stop hook that refuses to end a turn while an unstamped plan exists, so the review does not depend on remembering it ([setup](casualattitude0-skill-collection/cross-model-review/INSTALL.md)) |
 | `localizer-ja` | 2026-07-31 | zh-TW / English → Japanese localization, aimed at killing 翻訳臭 rather than just being grammatical. Three modes with their own 文体 and fatal error: academic (定訳, no invented terminology), media (subtitle spec, 役割語 restraint), business (敬語 尺度, 婉曲 refusal ladder) |
 | `skill-curator` | 2026-07-30 | Keep the installed skill set lean — scans for drift between `MANIFEST.md`, the repo, and `~/.claude/skills/`, flags overlapping skills through a ponytail simplicity lens, then syncs the symlinks to the decisions you confirm |
