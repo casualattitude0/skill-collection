@@ -78,6 +78,26 @@ the row back to `enabled` plus a `sync.sh` run restores it.
 | playwright-generate-test | github-awesome-copilot/playwright-generate-test | disabled | narrowest of the three browser drivers; playwright-cli plus playwright-best-practices cover it |
 | prd | github-awesome-copilot/prd | enabled |  |
 | graphify | graphify-labs-graphify/graphify | enabled |  |
+| cavecrew | juliusbrussee-caveman/cavecrew | enabled | vendored 2026-08-23; needs the cavecrew-* subagents from the upstream plugin dir to actually delegate |
+| caveman | juliusbrussee-caveman/caveman | enabled | vendored 2026-08-23 |
+| caveman-commit | juliusbrussee-caveman/caveman-commit | enabled | vendored 2026-08-23; overlaps commitify — both claim "write a commit" |
+| caveman-compress | juliusbrussee-caveman/caveman-compress | enabled | vendored 2026-08-23; standalone, ships its own Python compressor |
+| caveman-discover | juliusbrussee-caveman/caveman-discover | enabled | vendored 2026-08-23; requires a Caveman Cloud account |
+| caveman-evidence-review | juliusbrussee-caveman/caveman-evidence-review | enabled | vendored 2026-08-23; requires a Caveman Cloud account |
+| caveman-explore | juliusbrussee-caveman/caveman-explore | enabled | vendored 2026-08-23; authored as a subagent definition (tools/model frontmatter), not a user-invocable skill |
+| caveman-help | juliusbrussee-caveman/caveman-help | enabled | vendored 2026-08-23 |
+| caveman-learn | juliusbrussee-caveman/caveman-learn | enabled | vendored 2026-08-23; requires the caveman CLI |
+| caveman-manage | juliusbrussee-caveman/caveman-manage | enabled | vendored 2026-08-23; requires a Caveman Cloud account |
+| caveman-optimize | juliusbrussee-caveman/caveman-optimize | enabled | vendored 2026-08-23; requires a logged-in caveman CLI |
+| caveman-review | juliusbrussee-caveman/caveman-review | enabled | vendored 2026-08-23; overlaps code-review and ponytail-review on "review this PR" |
+| caveman-setup | juliusbrussee-caveman/caveman-setup | enabled | vendored 2026-08-23; requires the Caveman gateway URL and a Cave API key |
+| caveman-stats | juliusbrussee-caveman/caveman-stats | enabled | vendored 2026-08-23; inert without hooks/caveman-mode-tracker.js from the upstream plugin |
+| investigate-first | juliusbrussee-caveman/investigate-first | enabled | vendored 2026-08-23; overlaps diagnosing-bugs |
+| lean-build | juliusbrussee-caveman/lean-build | enabled | vendored 2026-08-23; overlaps ponytail's scope discipline |
+| migration | juliusbrussee-caveman/migration | enabled | vendored 2026-08-23 |
+| safe-refactor | juliusbrussee-caveman/safe-refactor | enabled | vendored 2026-08-23 |
+| surgical-patch | juliusbrussee-caveman/surgical-patch | enabled | vendored 2026-08-23 |
+| verify-and-stop | juliusbrussee-caveman/verify-and-stop | enabled | vendored 2026-08-23 |
 | humanizer-zh-tw | kevintsai1202-humanizer-zh-tw/humanizer-zh-tw | disabled | superseded by humanizer-tw — identical trigger string, and native Chinese patterns beat translated English tells |
 | academic-cv-builder | local-skills/career/academic-cv-builder | disabled | job-search skill — never fires during development work; brought under the manifest 2026-07-30 so it is toggleable |
 | career-changer-translator | local-skills/career/career-changer-translator | disabled | job-search skill — never fires during development work; brought under the manifest 2026-07-30 so it is toggleable |
