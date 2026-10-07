@@ -1,0 +1,9 @@
+{
+  "name": "retro",
+  "version": "0.1.0",
+  "description": "復盤：偵測到你在糾正 Claude 時主動詢問，並在面板逐項審查要寫回 Skill / CLAUDE.md 的改動",
+  "types": "./types/index.d.ts",
+  "author": {
+    "name": "Attitude"
+  }
+}
