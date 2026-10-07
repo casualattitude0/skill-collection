@@ -1,0 +1,6 @@
+{
+  "name": "session-board",
+  "version": "0.1.0",
+  "description": "Rows above the prompt for every running Claude Code session: name, estimated progress and time left; press a name to jump to it",
+  "types": "./types/index.d.ts"
+}
