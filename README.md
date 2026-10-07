@@ -316,6 +316,7 @@ rather than a pin. All of them live in `casualattitude0-skill-collection/`.
 
 | Skill | Last updated | Purpose |
 |-------|--------------|---------|
+| `motion-graphics` | 2026-10-08 | Direct a motion graphics video in Remotion from brief to rendered MP4 — guided interview for the brief, style guide from a reference, shotlist on a beat grid approved before any code, build, code-synthesized score and SFX, then a critique loop that scores its own rendered frames until every axis reaches 8. Ships a zero-dependency Node sound synthesizer |
 | `kickoff` | 2026-10-03 | `/kickoff <task>` — drafts a four-slot brief (task, end state, stop conditions, time budget), confirms it in one round of questions, then runs to the end state against a checklist file: report-and-continue, pause only on stop conditions or destructive actions, evidence-checked subagents for wide work. User-invoked only |
 | `cross-model-image` | 2026-09-27 | Generate or edit a raster image with GPT-6-Sol at `xhigh` through Codex's built-in image tool — labeled brief, one held thread, every output opened and checked by Claude, accepted file placed in the project |
 | `cross-model-delegate` | 2026-09-13 | Hand a bounded task to Codex over `codex exec` — written brief, one held thread, sandbox picked from the task's boundaries, result verified by Claude before it is reported |
