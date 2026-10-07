@@ -1,0 +1,6 @@
+{
+  "name": "usage-bar",
+  "version": "0.1.0",
+  "description": "A bar above the prompt: session limit remaining | cost of the current turn",
+  "types": "./types/index.d.ts"
+}
