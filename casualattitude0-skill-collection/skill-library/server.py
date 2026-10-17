@@ -26,13 +26,15 @@ JEV_PATH = os.path.join(REPO_ROOT, "casualattitude0-skill-collection", "manager"
 SERVED = {"library", "linked"}           # statuses get_skill will serve
 MANAGER_SIDE = {"manager", "model-selection"}  # routing skills, never a worker's pick
 DESC_CAP = 800                           # chars of description handed to jev per option
+MIN_P = 0.05                             # find_skill returns every candidate at or above this
+MAX_CANDIDATES = 5
 MAX_FILES_LISTED = 60
 
 INSTRUCTIONS = (
     "Skill library: most skills are not preloaded. Before a task that may have an "
     "established procedure (review, testing, git/PR flow, writing, design, debugging, "
-    "research, a named tool), call find_skill with the task in English; if its band is "
-    "act or consider, call get_skill and follow it. When briefing a subagent, name the "
+    "research, a named tool), call find_skill with the task in English, choose among the "
+    "candidates it returns, then call get_skill and follow it. When briefing a subagent, name the "
     "skill and tell it to call get_skill first."
 )
 
@@ -98,7 +100,7 @@ def tool_find_skill(args):
     task = (args.get("task") or "").strip()
     if not task:
         return {"ok": False, "error": "task is required"}, True
-    top = int(args.get("top") or 3)
+    min_p = float(args.get("min_p") or MIN_P)
     cands = catalog()
     if len(cands) > 254:
         return {"ok": False, "error": f"{len(cands)} candidates exceed jev's 255-option limit; "
@@ -118,16 +120,26 @@ def tool_find_skill(args):
                 "fallback": "choose from catalog yourself",
                 "catalog": {n: d[:160] for n, d in cands.items()}}, False
     ans = resp["answers"]["pick"]
-    ranked = sorted(ans["probabilities"].items(), key=lambda kv: -kv[1])[:top]
+    ranked = sorted(ans["probabilities"].items(), key=lambda kv: -kv[1])
+    # Every skill jev gives real weight to, so the caller decides between close calls.
+    hits = [(n, p) for n, p in ranked if n != "none" and p >= min_p][:MAX_CANDIDATES]
+    if not hits:
+        nxt = "no skill clears the threshold; proceed without one"
+    elif len(hits) == 1:
+        nxt = f"one candidate; get_skill({hits[0][0]!r}) and follow it"
+    else:
+        nxt = ("several candidates: read their descriptions, pick the one that fits "
+               "(or load more than one if they cover different parts), then get_skill")
     return {
         "ok": True,
         "choice": ans["choice"],
         "confidence": round(ans["confidence"], 3),
         "band": jev.band(ans["confidence"]),
-        "top": [{"name": n, "p": round(p, 3), "description": cands.get(n, "")[:200]}
-                for n, p in ranked],
+        "none_p": round(ans["probabilities"].get("none", 0.0), 3),
+        "candidates": [{"name": n, "p": round(p, 3), "description": cands.get(n, "")[:300]}
+                       for n, p in hits],
         "jev": resp.get("model"),
-        "next": "band act → get_skill(choice); consider → judge from top; ignore → proceed without",
+        "next": nxt,
     }, False
 
 
@@ -183,12 +195,13 @@ def tool_list_skills(_args):
 
 TOOLS = {
     "find_skill": (tool_find_skill, {
-        "description": "Ask jev which library skill fits a task. Returns choice, band "
-                       "(act/consider/ignore) and the top candidates. Write the task in English.",
+        "description": "Ask jev which library skills fit a task. Returns every candidate "
+                       "whose probability clears min_p (often one, several when the call is "
+                       "close) for you to choose from. Write the task in English.",
         "inputSchema": {"type": "object", "properties": {
             "task": {"type": "string", "description": "The task or subagent brief, in English"},
             "context": {"type": "string", "description": "Facts the task text does not carry"},
-            "top": {"type": "integer", "description": "Candidates to return (default 3)"},
+            "min_p": {"type": "number", "description": "Probability floor for a candidate (default 0.05)"},
         }, "required": ["task"]},
     }),
     "get_skill": (tool_get_skill, {

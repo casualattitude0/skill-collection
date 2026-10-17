@@ -58,8 +58,10 @@ mcp__skill-library__find_skill(task=<brief text>)
 
 `route` returns a rung (`model`, `effort`) for the Agent call plus two
 probabilities, `followup` and `codex`. `find_skill` asks jev to pick from
-the skill library (skills not preloaded into any session) and returns the
-skill the worker should load. If the tool is missing, fall back to
+the skill library (skills not preloaded into any session) and returns every
+candidate at or above `min_p` (0.05). One candidate: take it. Several: read
+their descriptions and choose — or name more than one when they cover
+different parts of the brief — and record why in the routing line. If the tool is missing, fall back to
 `~/.claude/skills/manager/scripts/list-skills > skills.json && ~/.claude/skills/manager/scripts/jev pick --kind skills
 --candidates skills.json --task-file BRIEF`.
 When the brief touches an external system, write a `{server: description}`
