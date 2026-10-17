@@ -5,6 +5,8 @@ description: Model selection guide for subagents and workflows. Use whenever spa
 
 # Model Selection (subagents, workflows)
 
+The per-brief rung for a subagent comes from `manager/scripts/jev route`; this table is the longer guide for cases jev leaves to you.
+
 | Scenario | Use |
 |---|---|
 | Planning, orchestration, main loop | fable-5. Main agent only; don't spawn it as a subagent |

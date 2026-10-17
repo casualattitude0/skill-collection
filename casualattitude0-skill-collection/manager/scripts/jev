@@ -1,0 +1,269 @@
+#!/usr/bin/env python3
+"""jev — ask TypeSafe's System One model (Jev) a routing question.
+
+Jev is not generative: it returns calibrated probabilities over options you
+supply. This script owns the control flow; Jev supplies the judgment.
+
+Subcommands
+  route  --task TEXT|--task-file F [--context TEXT]
+         Which rung (model + effort) a subagent brief deserves, plus two
+         nouls: followup (continues earlier work) and codex (belongs with a
+         GPT model via cross-model-delegate rather than a Claude subagent).
+  pick   --task TEXT|--task-file F --candidates FILE [--kind skills|tools] [--top N]
+         Which candidate (skill, MCP server, MCP tool) fits the brief.
+         FILE is JSON {name: one-line description}. "none" is always added.
+  ask    --state FILE --questions FILE
+         Raw passthrough: any state, any questions (escape hatch).
+
+Credentials: TYPESAFE_API_KEY env, else ~/.config/typesafe/api_key (chmod 600).
+Output is always one JSON object on stdout. Any failure yields {"ok": false, ...}
+with exit 0 so the caller falls back to its own judgment (fail-open).
+"""
+import argparse
+import json
+import os
+import sys
+import urllib.error
+import urllib.request
+
+# ──────────────────────────── review surface ────────────────────────────────
+# Questions and thresholds live here, in one place. Edit and re-run `eval`
+# cases below before trusting a change. Docs: https://docs.typesafe.ai
+
+API_URL = "https://api.typesafe.ai/v1/systemone"
+MODEL = "jev-latest"
+TIMEOUT_S = 4.0
+
+# Agent tool enum values. fable is the main agent only; subagents stop at opus.
+RUNGS = {
+    "light": {"model": "sonnet", "effort": "medium"},
+    "standard": {"model": "opus", "effort": "high"},
+    "hard": {"model": "opus", "effort": "xhigh"},
+}
+
+ROUTE_QUESTION = {
+    "type": "choice",
+    "instructions": (
+        "Which tier of model capability does `task` need for a subagent to "
+        "finish it to the stated done-condition on the first attempt? Judge the "
+        "task's intrinsic difficulty, not its length."
+    ),
+    "criteria": {
+        "light": {
+            "covers": "Search, exploration, locating code, summarising files, "
+                      "mechanical edits with a clear spec, data gathering, "
+                      "running and reporting a command.",
+            "excludes": "Anything needing design judgment or debugging.",
+        },
+        "standard": {
+            "covers": "Implementation of a moderately specified feature, "
+                      "user-facing work (UI, copy, API shape), taste review, "
+                      "writing documentation, refactors inside one module.",
+            "excludes": "Root-causing an unknown failure; cross-cutting changes.",
+        },
+        "hard": {
+            "covers": "Debugging an unknown cause, cross-cutting or long-running "
+                      "implementation, architecture or security review, "
+                      "concurrency, migrations, anything where a wrong answer "
+                      "is expensive to detect.",
+            "excludes": "Work that a clear spec reduces to typing.",
+        },
+    },
+}
+
+FOLLOWUP_QUESTION = {
+    "type": "noul",
+    "instructions": (
+        "`task` continues work already in progress (a correction, a retry, or "
+        "the next iteration of something just done) rather than starting a "
+        "new piece of work."
+    ),
+}
+
+# Separate from the tier on purpose: jev judges difficulty, not model family.
+# A high value routes the brief through cross-model-delegate (Codex CLI);
+# the tier is still computed as the Claude fallback rung.
+CODEX_QUESTION = {
+    "type": "noul",
+    "instructions": (
+        "`task` belongs with a model from a second family (GPT via Codex) "
+        "rather than another Claude agent: the user asked for GPT, Codex or "
+        "OpenAI by name, or the task is an independent second opinion, "
+        "cross-check or adversarial review of work Claude itself produced, "
+        "where sharing the first author's blind spots would defeat the "
+        "purpose. Ordinary review, testing or verification that any capable "
+        "model could do, and tasks that merely mention codex as a path or "
+        "file name, do not count."
+    ),
+}
+
+PICK_INSTRUCTIONS = {
+    "skills": (
+        "Which skill should the subagent load before doing `task`? Pick the "
+        "one whose description names this kind of work. Pick `none` when no "
+        "description fits or the task needs no special procedure."
+    ),
+    "tools": (
+        "Which tool or tool server does `task` need to call? Pick the one "
+        "whose description covers the system the task must touch. Pick "
+        "`none` when the task is done with files and shell alone."
+    ),
+}
+NONE_DESCRIPTION = "No candidate fits; the agent proceeds without one."
+
+# Three bands (docs/confidence): act / consider / ignore.
+ACT_AT = 0.70       # take Jev's answer
+CONSIDER_AT = 0.50  # Jev's answer is a hint; the manager decides
+# ────────────────────────────────────────────────────────────────────────────
+
+
+def band(confidence):
+    if confidence >= ACT_AT:
+        return "act"
+    if confidence >= CONSIDER_AT:
+        return "consider"
+    return "ignore"
+
+
+def api_key():
+    key = os.environ.get("TYPESAFE_API_KEY")
+    if key:
+        return key.strip()
+    path = os.path.expanduser("~/.config/typesafe/api_key")
+    try:
+        with open(path) as f:
+            return f.read().strip()
+    except OSError:
+        return None
+
+
+def call(state, questions):
+    key = api_key()
+    if not key:
+        return None, "no API key: set TYPESAFE_API_KEY or ~/.config/typesafe/api_key"
+    body = json.dumps({"state": state, "model": MODEL, "questions": questions}).encode()
+    req = urllib.request.Request(
+        API_URL, data=body, method="POST",
+        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=TIMEOUT_S) as r:
+            return json.load(r), None
+    except urllib.error.HTTPError as e:
+        detail = e.read().decode(errors="replace")[:300]
+        return None, f"HTTP {e.code}: {detail}"
+    except Exception as e:  # timeout, DNS, bad JSON — all fail open
+        return None, f"{type(e).__name__}: {e}"
+
+
+def emit(obj):
+    print(json.dumps(obj, indent=2, ensure_ascii=False))
+
+
+def fail(reason):
+    emit({"ok": False, "band": "ignore", "error": reason})
+    sys.exit(0)
+
+
+def read_task(args):
+    if args.task_file:
+        with open(args.task_file) as f:
+            return f.read()
+    if args.task:
+        return args.task
+    sys.exit("one of --task or --task-file is required")
+
+
+def cmd_route(args):
+    task = read_task(args)
+    state = {"task": task}
+    if args.context:
+        state["context"] = args.context
+    resp, err = call(state, {"tier": ROUTE_QUESTION, "followup": FOLLOWUP_QUESTION,
+                             "codex": CODEX_QUESTION})
+    if err:
+        fail(err)
+    tier = resp["answers"]["tier"]
+    conf = tier["confidence"]
+    out = {
+        "ok": True,
+        "tier": tier["choice"],
+        **RUNGS[tier["choice"]],
+        "confidence": round(conf, 3),
+        "band": band(conf),
+        "probabilities": {k: round(v, 3) for k, v in tier["probabilities"].items()},
+        "followup": round(resp["answers"]["followup"]["noul"], 3),
+        "codex": round(resp["answers"]["codex"]["noul"], 3),
+        "jev": resp.get("model"),
+    }
+    emit(out)
+
+
+def cmd_pick(args):
+    task = read_task(args)
+    with open(args.candidates) as f:
+        candidates = json.load(f)
+    if not isinstance(candidates, dict) or not candidates:
+        sys.exit("--candidates must be a non-empty JSON object {name: description}")
+    if len(candidates) > 254:
+        sys.exit(f"{len(candidates)} candidates; Jev takes at most 255 options. "
+                 "Chain: pick a group first, then pick within it.")
+    criteria = {name: (desc or None) for name, desc in candidates.items()}
+    criteria["none"] = NONE_DESCRIPTION
+    question = {"type": "choice", "instructions": PICK_INSTRUCTIONS[args.kind],
+                "criteria": criteria}
+    resp, err = call({"task": task}, {"pick": question})
+    if err:
+        fail(err)
+    ans = resp["answers"]["pick"]
+    conf = ans["confidence"]
+    ranked = sorted(ans["probabilities"].items(), key=lambda kv: -kv[1])
+    emit({
+        "ok": True,
+        "kind": args.kind,
+        "choice": ans["choice"],
+        "confidence": round(conf, 3),
+        "band": band(conf),
+        "top": [{"name": n, "p": round(p, 3)} for n, p in ranked[: args.top]],
+        "jev": resp.get("model"),
+    })
+
+
+def cmd_ask(args):
+    with open(args.state) as f:
+        state = json.load(f)
+    with open(args.questions) as f:
+        questions = json.load(f)
+    resp, err = call(state, questions)
+    if err:
+        fail(err)
+    emit({"ok": True, **resp})
+
+
+def main():
+    p = argparse.ArgumentParser(prog="jev", description=__doc__,
+                                formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = p.add_subparsers(dest="cmd", required=True)
+
+    r = sub.add_parser("route", help="model + effort rung for a brief")
+    r.add_argument("--task"); r.add_argument("--task-file")
+    r.add_argument("--context", help="facts the brief alone does not carry")
+    r.set_defaults(fn=cmd_route)
+
+    k = sub.add_parser("pick", help="choose a skill / server / tool for a brief")
+    k.add_argument("--task"); k.add_argument("--task-file")
+    k.add_argument("--candidates", required=True, help="JSON {name: description}")
+    k.add_argument("--kind", choices=sorted(PICK_INSTRUCTIONS), default="skills")
+    k.add_argument("--top", type=int, default=3)
+    k.set_defaults(fn=cmd_pick)
+
+    a = sub.add_parser("ask", help="raw state + questions passthrough")
+    a.add_argument("--state", required=True); a.add_argument("--questions", required=True)
+    a.set_defaults(fn=cmd_ask)
+
+    args = p.parse_args()
+    args.fn(args)
+
+
+if __name__ == "__main__":
+    main()
