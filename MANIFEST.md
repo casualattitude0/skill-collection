@@ -10,8 +10,16 @@ manifest meant 814 tokens in every conversation with no way to turn them off.
 Anything else in `local-skills/` is still unmanaged, as is `find-skills`, which
 points outside this repo.
 
-A `disabled` row does not delete anything: the skill stays on disk and flipping
-the row back to `enabled` plus a `sync.sh` run restores it.
+Status values:
+
+- `linked` — symlinked into `~/.claude/skills/`, so its description loads in
+  every session. Reserved for the router (`manager`), skills the user types as
+  slash commands, and `disable-model-invocation` skills (which cost nothing).
+- `library` — not linked. jev picks it through the `skill-library` MCP server
+  (`find_skill`), and agents load it with `get_skill`. Zero per-session cost.
+- `disabled` — neither linked nor served.
+
+None of these delete anything; change the cell and run `sync.sh`.
 
 ## Skills
 
@@ -26,46 +34,47 @@ the row back to `enabled` plus a `sync.sh` run restores it.
 | vue-router-best-practices | antfu-skills/vue-router-best-practices | disabled | Vue stack — disabled 2026-07-30, not in active use |
 | vue-testing-best-practices | antfu-skills/vue-testing-best-practices | disabled | Vue stack — disabled 2026-07-30, not in active use |
 | vueuse-functions | antfu-skills/vueuse-functions | disabled | Vue stack — disabled 2026-07-30, not in active use |
-| algorithmic-art | anthropics-skills/algorithmic-art | enabled |  |
+| algorithmic-art | anthropics-skills/algorithmic-art | library |  |
 | brand-guidelines | anthropics-skills/brand-guidelines | disabled | applies Anthropic's own brand colors and typography — not our brand, so it never applies here |
-| doc-coauthoring | anthropics-skills/doc-coauthoring | enabled | kept over documentation-writer — a full co-authoring workflow, not a pointer |
+| doc-coauthoring | anthropics-skills/doc-coauthoring | library | kept over documentation-writer — a full co-authoring workflow, not a pointer |
 | frontend-design | anthropics-skills/frontend-design | disabled | 1.3k words of aesthetic direction, subsumed by impeccable (50k) and typeui-fundamentals (44k) |
-| internal-comms | anthropics-skills/internal-comms | enabled |  |
-| mcp-builder | anthropics-skills/mcp-builder | enabled |  |
-| slack-gif-creator | anthropics-skills/slack-gif-creator | enabled |  |
-| theme-factory | anthropics-skills/theme-factory | enabled |  |
-| web-artifacts-builder | anthropics-skills/web-artifacts-builder | enabled |  |
-| webapp-testing | anthropics-skills/webapp-testing | enabled | kept alongside playwright-cli — Python/local-app debugging with browser-log capture is a distinct job |
-| typeui-fundamentals | bergside-typeui/typeui-fundamentals | enabled | kept over frontend-design — principles and WCAG reference, complementary to impeccable |
-| commitify | casualattitude0-skill-collection/commitify | enabled |  |
-| cross-model-delegate | casualattitude0-skill-collection/cross-model-delegate | enabled | hands a bounded task to Codex and verifies the result — distinct from cross-model-review (findings and a stamp) and cross-model-discuss (dialogue) |
-| cross-model-discuss | casualattitude0-skill-collection/cross-model-discuss | enabled | sustained dialogue between model families — distinct from cross-model-review, which gates a plan on findings and approval |
-| cross-model-image | casualattitude0-skill-collection/cross-model-image | enabled | generates or edits images with GPT-6-Sol over Codex and inspects them — distinct from cross-model-delegate (non-image tasks) and from code-native graphics (algorithmic-art, canvas-design) |
-| cross-model-review | casualattitude0-skill-collection/cross-model-review | enabled | reviews plans pre-implementation via a second model — no overlap with the code-diff reviewers |
-| git-hot-fix | casualattitude0-skill-collection/git-hot-fix | enabled |  |
-| github-pr-merge | casualattitude0-skill-collection/github-pr-merge | enabled |  |
-| github-pr-workflow | casualattitude0-skill-collection/github-pr-workflow | enabled |  |
-| github-pr-workflow-only | casualattitude0-skill-collection/github-pr-workflow-only | enabled |  |
-| kickoff | casualattitude0-skill-collection/kickoff | enabled | user-invoked only (no always-on description) — pre-task brief plus a run-to-end-state contract; distinct from grilling (stress-tests a plan), lean-build (scope discipline) and verify-and-stop (proof of finished work) |
-| local-transcribe | casualattitude0-skill-collection/local-transcribe | enabled |  |
-| localizer-ja | casualattitude0-skill-collection/localizer-ja | enabled | no overlap with the humanizer skills — those de-AI Chinese/English prose, this localizes into Japanese |
-| model-selection | casualattitude0-skill-collection/model-selection | enabled |  |
-| motion-graphics | casualattitude0-skill-collection/motion-graphics | enabled | directs a Remotion video from brief to render — no overlap with cross-model-image (single raster images) or algorithmic-art (p5.js generative art) |
-| prompt-debt | casualattitude0-skill-collection/prompt-debt | enabled | audits rule-by-rule inside instruction files — no overlap with skill-curator (which skills to enable) or skill-verdict (is one skill fit to ship) |
-| showcase-writer | casualattitude0-skill-collection/showcase-writer | enabled |  |
-| skill-curator | casualattitude0-skill-collection/skill-curator | enabled |  |
-| skill-verdict | casualattitude0-skill-collection/skill-verdict | enabled |  |
-| ssh-account-doctor | casualattitude0-skill-collection/ssh-account-doctor | enabled |  |
-| unify | casualattitude0-skill-collection/unify | enabled |  |
-| whereto | casualattitude0-skill-collection/whereto | enabled |  |
-| avoid-ai-writing | conorbronsdon-avoid-ai-writing/avoid-ai-writing | enabled |  |
-| playwright-best-practices | currents-dev-playwright-best-practices-skill/playwright-best-practices | enabled | kept — Playwright-specific reference, not redundant with the framework-agnostic frontend-testing-best-practices |
-| ponytail | dietrichgebert-ponytail/ponytail | enabled |  |
-| ponytail-audit | dietrichgebert-ponytail/ponytail-audit | enabled |  |
-| ponytail-debt | dietrichgebert-ponytail/ponytail-debt | enabled |  |
-| ponytail-gain | dietrichgebert-ponytail/ponytail-gain | enabled |  |
-| ponytail-help | dietrichgebert-ponytail/ponytail-help | enabled |  |
-| ponytail-review | dietrichgebert-ponytail/ponytail-review | enabled |  |
+| internal-comms | anthropics-skills/internal-comms | library |  |
+| mcp-builder | anthropics-skills/mcp-builder | library |  |
+| slack-gif-creator | anthropics-skills/slack-gif-creator | library |  |
+| theme-factory | anthropics-skills/theme-factory | library |  |
+| web-artifacts-builder | anthropics-skills/web-artifacts-builder | library |  |
+| webapp-testing | anthropics-skills/webapp-testing | library | kept alongside playwright-cli — Python/local-app debugging with browser-log capture is a distinct job |
+| typeui-fundamentals | bergside-typeui/typeui-fundamentals | library | kept over frontend-design — principles and WCAG reference, complementary to impeccable |
+| commitify | casualattitude0-skill-collection/commitify | linked |  |
+| cross-model-delegate | casualattitude0-skill-collection/cross-model-delegate | library | hands a bounded task to Codex and verifies the result — distinct from cross-model-review (findings and a stamp) and cross-model-discuss (dialogue) |
+| cross-model-discuss | casualattitude0-skill-collection/cross-model-discuss | library | sustained dialogue between model families — distinct from cross-model-review, which gates a plan on findings and approval |
+| cross-model-image | casualattitude0-skill-collection/cross-model-image | library | generates or edits images with GPT-6-Sol over Codex and inspects them — distinct from cross-model-delegate (non-image tasks) and from code-native graphics (algorithmic-art, canvas-design) |
+| cross-model-review | casualattitude0-skill-collection/cross-model-review | library | reviews plans pre-implementation via a second model — no overlap with the code-diff reviewers |
+| git-hot-fix | casualattitude0-skill-collection/git-hot-fix | library |  |
+| github-pr-merge | casualattitude0-skill-collection/github-pr-merge | library |  |
+| github-pr-workflow | casualattitude0-skill-collection/github-pr-workflow | library |  |
+| github-pr-workflow-only | casualattitude0-skill-collection/github-pr-workflow-only | library |  |
+| kickoff | casualattitude0-skill-collection/kickoff | linked | user-invoked only (no always-on description) — pre-task brief plus a run-to-end-state contract; distinct from grilling (stress-tests a plan), lean-build (scope discipline) and verify-and-stop (proof of finished work) |
+| local-transcribe | casualattitude0-skill-collection/local-transcribe | library |  |
+| localizer-ja | casualattitude0-skill-collection/localizer-ja | library | no overlap with the humanizer skills — those de-AI Chinese/English prose, this localizes into Japanese |
+| model-selection | casualattitude0-skill-collection/model-selection | library |  |
+| manager | casualattitude0-skill-collection/manager | linked | manager loop for Agent dispatch — jev routes each brief to a rung and a skill; model-selection stays the human-facing rung table |
+| motion-graphics | casualattitude0-skill-collection/motion-graphics | library | directs a Remotion video from brief to render — no overlap with cross-model-image (single raster images) or algorithmic-art (p5.js generative art) |
+| prompt-debt | casualattitude0-skill-collection/prompt-debt | library | audits rule-by-rule inside instruction files — no overlap with skill-curator (which skills to enable) or skill-verdict (is one skill fit to ship) |
+| showcase-writer | casualattitude0-skill-collection/showcase-writer | library |  |
+| skill-curator | casualattitude0-skill-collection/skill-curator | linked |  |
+| skill-verdict | casualattitude0-skill-collection/skill-verdict | library |  |
+| ssh-account-doctor | casualattitude0-skill-collection/ssh-account-doctor | library |  |
+| unify | casualattitude0-skill-collection/unify | library |  |
+| whereto | casualattitude0-skill-collection/whereto | library |  |
+| avoid-ai-writing | conorbronsdon-avoid-ai-writing/avoid-ai-writing | library |  |
+| playwright-best-practices | currents-dev-playwright-best-practices-skill/playwright-best-practices | library | kept — Playwright-specific reference, not redundant with the framework-agnostic frontend-testing-best-practices |
+| ponytail | dietrichgebert-ponytail/ponytail | library |  |
+| ponytail-audit | dietrichgebert-ponytail/ponytail-audit | library |  |
+| ponytail-debt | dietrichgebert-ponytail/ponytail-debt | library |  |
+| ponytail-gain | dietrichgebert-ponytail/ponytail-gain | library |  |
+| ponytail-help | dietrichgebert-ponytail/ponytail-help | library |  |
+| ponytail-review | dietrichgebert-ponytail/ponytail-review | library |  |
 | flutter-add-integration-test | flutter-skills/flutter-add-integration-test | disabled | Flutter stack — disabled 2026-07-30, not in active use |
 | flutter-add-widget-preview | flutter-skills/flutter-add-widget-preview | disabled | Flutter stack — disabled 2026-07-30, not in active use |
 | flutter-add-widget-test | flutter-skills/flutter-add-widget-test | disabled | Flutter stack — disabled 2026-07-30, not in active use |
@@ -78,28 +87,28 @@ the row back to `enabled` plus a `sync.sh` run restores it.
 | flutter-use-http-package | flutter-skills/flutter-use-http-package | disabled | Flutter stack — disabled 2026-07-30, not in active use |
 | documentation-writer | github-awesome-copilot/documentation-writer | disabled | 378-word Diátaxis pointer, subsumed by doc-coauthoring's fuller workflow |
 | playwright-generate-test | github-awesome-copilot/playwright-generate-test | disabled | narrowest of the three browser drivers; playwright-cli plus playwright-best-practices cover it |
-| prd | github-awesome-copilot/prd | enabled |  |
-| graphify | graphify-labs-graphify/graphify | enabled |  |
-| cavecrew | juliusbrussee-caveman/cavecrew | enabled | vendored 2026-08-23; needs the cavecrew-* subagents from the upstream plugin dir to actually delegate |
-| caveman | juliusbrussee-caveman/caveman | enabled | vendored 2026-08-23 |
-| caveman-commit | juliusbrussee-caveman/caveman-commit | enabled | vendored 2026-08-23; overlaps commitify — both claim "write a commit" |
-| caveman-compress | juliusbrussee-caveman/caveman-compress | enabled | vendored 2026-08-23; standalone, ships its own Python compressor |
-| caveman-discover | juliusbrussee-caveman/caveman-discover | enabled | vendored 2026-08-23; requires a Caveman Cloud account |
-| caveman-evidence-review | juliusbrussee-caveman/caveman-evidence-review | enabled | vendored 2026-08-23; requires a Caveman Cloud account |
-| caveman-explore | juliusbrussee-caveman/caveman-explore | enabled | vendored 2026-08-23; authored as a subagent definition (tools/model frontmatter), not a user-invocable skill |
-| caveman-help | juliusbrussee-caveman/caveman-help | enabled | vendored 2026-08-23 |
-| caveman-learn | juliusbrussee-caveman/caveman-learn | enabled | vendored 2026-08-23; requires the caveman CLI |
-| caveman-manage | juliusbrussee-caveman/caveman-manage | enabled | vendored 2026-08-23; requires a Caveman Cloud account |
-| caveman-optimize | juliusbrussee-caveman/caveman-optimize | enabled | vendored 2026-08-23; requires a logged-in caveman CLI |
-| caveman-review | juliusbrussee-caveman/caveman-review | enabled | vendored 2026-08-23; overlaps code-review and ponytail-review on "review this PR" |
-| caveman-setup | juliusbrussee-caveman/caveman-setup | enabled | vendored 2026-08-23; requires the Caveman gateway URL and a Cave API key |
-| caveman-stats | juliusbrussee-caveman/caveman-stats | enabled | vendored 2026-08-23; inert without hooks/caveman-mode-tracker.js from the upstream plugin |
-| investigate-first | juliusbrussee-caveman/investigate-first | enabled | vendored 2026-08-23; overlaps diagnosing-bugs |
-| lean-build | juliusbrussee-caveman/lean-build | enabled | vendored 2026-08-23; overlaps ponytail's scope discipline |
-| migration | juliusbrussee-caveman/migration | enabled | vendored 2026-08-23 |
-| safe-refactor | juliusbrussee-caveman/safe-refactor | enabled | vendored 2026-08-23 |
-| surgical-patch | juliusbrussee-caveman/surgical-patch | enabled | vendored 2026-08-23 |
-| verify-and-stop | juliusbrussee-caveman/verify-and-stop | enabled | vendored 2026-08-23 |
+| prd | github-awesome-copilot/prd | library |  |
+| graphify | graphify-labs-graphify/graphify | library |  |
+| cavecrew | juliusbrussee-caveman/cavecrew | library | vendored 2026-08-23; needs the cavecrew-* subagents from the upstream plugin dir to actually delegate |
+| caveman | juliusbrussee-caveman/caveman | library | vendored 2026-08-23 |
+| caveman-commit | juliusbrussee-caveman/caveman-commit | library | vendored 2026-08-23; overlaps commitify — both claim "write a commit" |
+| caveman-compress | juliusbrussee-caveman/caveman-compress | library | vendored 2026-08-23; standalone, ships its own Python compressor |
+| caveman-discover | juliusbrussee-caveman/caveman-discover | library | vendored 2026-08-23; requires a Caveman Cloud account |
+| caveman-evidence-review | juliusbrussee-caveman/caveman-evidence-review | library | vendored 2026-08-23; requires a Caveman Cloud account |
+| caveman-explore | juliusbrussee-caveman/caveman-explore | library | vendored 2026-08-23; authored as a subagent definition (tools/model frontmatter), not a user-invocable skill |
+| caveman-help | juliusbrussee-caveman/caveman-help | library | vendored 2026-08-23 |
+| caveman-learn | juliusbrussee-caveman/caveman-learn | library | vendored 2026-08-23; requires the caveman CLI |
+| caveman-manage | juliusbrussee-caveman/caveman-manage | library | vendored 2026-08-23; requires a Caveman Cloud account |
+| caveman-optimize | juliusbrussee-caveman/caveman-optimize | library | vendored 2026-08-23; requires a logged-in caveman CLI |
+| caveman-review | juliusbrussee-caveman/caveman-review | library | vendored 2026-08-23; overlaps code-review and ponytail-review on "review this PR" |
+| caveman-setup | juliusbrussee-caveman/caveman-setup | library | vendored 2026-08-23; requires the Caveman gateway URL and a Cave API key |
+| caveman-stats | juliusbrussee-caveman/caveman-stats | library | vendored 2026-08-23; inert without hooks/caveman-mode-tracker.js from the upstream plugin |
+| investigate-first | juliusbrussee-caveman/investigate-first | library | vendored 2026-08-23; overlaps diagnosing-bugs |
+| lean-build | juliusbrussee-caveman/lean-build | library | vendored 2026-08-23; overlaps ponytail's scope discipline |
+| migration | juliusbrussee-caveman/migration | library | vendored 2026-08-23 |
+| safe-refactor | juliusbrussee-caveman/safe-refactor | library | vendored 2026-08-23 |
+| surgical-patch | juliusbrussee-caveman/surgical-patch | library | vendored 2026-08-23 |
+| verify-and-stop | juliusbrussee-caveman/verify-and-stop | library | vendored 2026-08-23 |
 | humanizer-zh-tw | kevintsai1202-humanizer-zh-tw/humanizer-zh-tw | disabled | superseded by humanizer-tw — identical trigger string, and native Chinese patterns beat translated English tells |
 | academic-cv-builder | local-skills/career/academic-cv-builder | disabled | job-search skill — never fires during development work; brought under the manifest 2026-07-30 so it is toggleable |
 | career-changer-translator | local-skills/career/career-changer-translator | disabled | job-search skill — never fires during development work; brought under the manifest 2026-07-30 so it is toggleable |
@@ -123,31 +132,31 @@ the row back to `enabled` plus a `sync.sh` run restores it.
 | targeted-cv-generator | local-skills/career/targeted-cv-generator | disabled | job-search skill — never fires during development work; brought under the manifest 2026-07-30 so it is toggleable |
 | tech-resume-optimizer | local-skills/career/tech-resume-optimizer | disabled | job-search skill — never fires during development work; brought under the manifest 2026-07-30 so it is toggleable |
 | xue-hesheng-resume | local-skills/career/xue-hesheng-resume | disabled | job-search skill — never fires during development work; brought under the manifest 2026-07-30 so it is toggleable |
-| ask-matt | mattpocock-skills/ask-matt | enabled |  |
-| code-review | mattpocock-skills/code-review | enabled |  |
-| codebase-design | mattpocock-skills/codebase-design | enabled |  |
-| diagnosing-bugs | mattpocock-skills/diagnosing-bugs | enabled |  |
-| domain-modeling | mattpocock-skills/domain-modeling | enabled |  |
-| grill-me | mattpocock-skills/grill-me | enabled |  |
-| grill-with-docs | mattpocock-skills/grill-with-docs | enabled |  |
-| grilling | mattpocock-skills/grilling | enabled |  |
-| handoff | mattpocock-skills/handoff | enabled |  |
-| implement | mattpocock-skills/implement | enabled |  |
-| improve-codebase-architecture | mattpocock-skills/improve-codebase-architecture | enabled |  |
-| prototype | mattpocock-skills/prototype | enabled |  |
-| research | mattpocock-skills/research | enabled |  |
-| resolving-merge-conflicts | mattpocock-skills/resolving-merge-conflicts | enabled |  |
-| setup-matt-pocock-skills | mattpocock-skills/setup-matt-pocock-skills | enabled |  |
-| tdd | mattpocock-skills/tdd | enabled |  |
-| teach | mattpocock-skills/teach | enabled |  |
-| to-spec | mattpocock-skills/to-spec | enabled |  |
-| to-tickets | mattpocock-skills/to-tickets | enabled |  |
-| triage | mattpocock-skills/triage | enabled |  |
-| wayfinder | mattpocock-skills/wayfinder | enabled |  |
-| writing-for-agents | mattpocock-skills/writing-for-agents | enabled | upstream renamed writing-great-skills → writing-for-agents on 2026-09-13 sync; now model-invoked |
-| playwright-cli | microsoft-playwright-cli/playwright-cli | enabled | kept as the general browser driver over playwright-generate-test |
-| agent-reach | panniantong-agent-reach/agent-reach | enabled |  |
-| impeccable | pbakaus-impeccable/impeccable | enabled | kept over frontend-design — process and tooling, complementary to typeui-fundamentals |
+| ask-matt | mattpocock-skills/ask-matt | linked |  |
+| code-review | mattpocock-skills/code-review | library |  |
+| codebase-design | mattpocock-skills/codebase-design | library |  |
+| diagnosing-bugs | mattpocock-skills/diagnosing-bugs | library |  |
+| domain-modeling | mattpocock-skills/domain-modeling | library |  |
+| grill-me | mattpocock-skills/grill-me | linked |  |
+| grill-with-docs | mattpocock-skills/grill-with-docs | linked |  |
+| grilling | mattpocock-skills/grilling | library |  |
+| handoff | mattpocock-skills/handoff | linked |  |
+| implement | mattpocock-skills/implement | linked |  |
+| improve-codebase-architecture | mattpocock-skills/improve-codebase-architecture | linked |  |
+| prototype | mattpocock-skills/prototype | library |  |
+| research | mattpocock-skills/research | library |  |
+| resolving-merge-conflicts | mattpocock-skills/resolving-merge-conflicts | library |  |
+| setup-matt-pocock-skills | mattpocock-skills/setup-matt-pocock-skills | linked |  |
+| tdd | mattpocock-skills/tdd | library |  |
+| teach | mattpocock-skills/teach | linked |  |
+| to-spec | mattpocock-skills/to-spec | linked |  |
+| to-tickets | mattpocock-skills/to-tickets | linked |  |
+| triage | mattpocock-skills/triage | linked |  |
+| wayfinder | mattpocock-skills/wayfinder | linked |  |
+| writing-for-agents | mattpocock-skills/writing-for-agents | library | upstream renamed writing-great-skills → writing-for-agents on 2026-09-13 sync; now model-invoked |
+| playwright-cli | microsoft-playwright-cli/playwright-cli | library | kept as the general browser driver over playwright-generate-test |
+| agent-reach | panniantong-agent-reach/agent-reach | library |  |
+| impeccable | pbakaus-impeccable/impeccable | library | kept over frontend-design — process and tooling, complementary to typeui-fundamentals |
 | golang-code-style | samber-cc-skills-golang/golang-code-style | disabled | Go stack — disabled 2026-07-30, the corpus's heaviest block (~2.0k tokens across 8 skills) and not in active use |
 | golang-concurrency | samber-cc-skills-golang/golang-concurrency | disabled | Go stack — disabled 2026-07-30, the corpus's heaviest block (~2.0k tokens across 8 skills) and not in active use |
 | golang-context | samber-cc-skills-golang/golang-context | disabled | Go stack — disabled 2026-07-30, the corpus's heaviest block (~2.0k tokens across 8 skills) and not in active use |
@@ -156,10 +165,10 @@ the row back to `enabled` plus a `sync.sh` run restores it.
 | golang-performance | samber-cc-skills-golang/golang-performance | disabled | Go stack — disabled 2026-07-30, the corpus's heaviest block (~2.0k tokens across 8 skills) and not in active use |
 | golang-project-layout | samber-cc-skills-golang/golang-project-layout | disabled | Go stack — disabled 2026-07-30, the corpus's heaviest block (~2.0k tokens across 8 skills) and not in active use |
 | golang-testing | samber-cc-skills-golang/golang-testing | disabled | Go stack — disabled 2026-07-30, the corpus's heaviest block (~2.0k tokens across 8 skills) and not in active use |
-| frontend-testing-best-practices | sergiodxa-agent-skills/frontend-testing-best-practices | enabled | kept — framework-agnostic principles; specific plus agnostic is not an overlap |
-| react-best-practices | vercel-labs-agent-skills/react-best-practices | enabled |  |
-| python-testing-patterns | wshobson-agents/python-testing-patterns | enabled |  |
-| humanizer-tw | yelban-humanizer.tw/humanizer-tw | enabled | kept over humanizer-zh-tw — native Chinese patterns, Taiwanese voice, plus Grep/Glob so it can scan files |
+| frontend-testing-best-practices | sergiodxa-agent-skills/frontend-testing-best-practices | library | kept — framework-agnostic principles; specific plus agnostic is not an overlap |
+| react-best-practices | vercel-labs-agent-skills/react-best-practices | library |  |
+| python-testing-patterns | wshobson-agents/python-testing-patterns | library |  |
+| humanizer-tw | yelban-humanizer.tw/humanizer-tw | library | kept over humanizer-zh-tw — native Chinese patterns, Taiwanese voice, plus Grep/Glob so it can scan files |
 
 ## Not in this table — plugin and built-in skills
 

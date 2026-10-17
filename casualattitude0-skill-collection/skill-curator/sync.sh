@@ -1,5 +1,7 @@
 #!/bin/sh
 # Reconcile ~/.claude/skills/ symlinks against MANIFEST.md.
+# Only `linked` rows get a symlink; `library` rows are served by the
+# skill-library MCP server instead, and `disabled` rows by nothing.
 # Usage: sync.sh [--dry-run]
 set -eu
 
@@ -12,7 +14,7 @@ DRY_RUN=0
 [ -f "$MANIFEST" ] || { echo "MANIFEST.md not found at $MANIFEST" >&2; exit 1; }
 [ "$DRY_RUN" = "1" ] || mkdir -p "$TARGET_DIR"
 
-# Table rows look like: | skill-name | source/dir/skill-name | enabled | reason |
+# Table rows look like: | skill-name | source/dir/skill-name | linked | reason |
 grep -E '^\| ' "$MANIFEST" | grep -v -- '---' | grep -v '| Skill | Source dir |' | \
 while IFS='|' read -r _ name dir status _rest; do
   name=$(echo "$name" | xargs)
@@ -23,7 +25,7 @@ while IFS='|' read -r _ name dir status _rest; do
   link="$TARGET_DIR/$name"
   src="$REPO_ROOT/$dir"
 
-  if [ "$status" = "enabled" ]; then
+  if [ "$status" = "linked" ]; then
     if [ ! -d "$src" ]; then
       echo "skip: $name — source dir missing ($dir); remove the row or restore the skill" >&2
       continue
@@ -36,7 +38,7 @@ while IFS='|' read -r _ name dir status _rest; do
   else
     if [ -L "$link" ]; then
       if [ "$DRY_RUN" = "1" ]; then
-        echo "would unlink: $name (disabled: $status)"
+        echo "would unlink: $name ($status)"
       else
         rm -f "$link"
       fi

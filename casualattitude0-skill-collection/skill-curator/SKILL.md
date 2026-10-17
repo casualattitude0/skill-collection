@@ -8,7 +8,9 @@ license: MIT
 
 # skill-curator — keep the installed skill set lean
 
-Every enabled skill's `description` gets loaded into context on every turn.
+Every `linked` skill's `description` gets loaded into context on every turn;
+`library` skills cost nothing until jev picks one through the `skill-library`
+MCP server.
 More skills means more tokens and more chances for two descriptions to
 compete for the same trigger phrase. This skill keeps the corpus small by
 finding overlapping skills and cutting the weaker ones — the ponytail
@@ -41,7 +43,7 @@ Compare three things:
 - `~/.claude/skills/` — the actual symlinks (source of truth for *reality*)
 
 Any skill on disk but missing from `MANIFEST.md` is new — add it as a row
-with status `enabled` and an empty reason. Any manifest row whose source dir
+with status `library` and an empty reason. Any manifest row whose source dir
 no longer exists should be removed (skill was un-vendored).
 
 **The `Skills` context block is wider than this manifest.** Plugin and
@@ -116,8 +118,8 @@ Do those without asking; only the disable decision itself gates.
 
 ## Step 4 — Update the manifest
 
-For each confirmed decision, edit `MANIFEST.md`: set `Status` to `enabled`
-or `disabled`, and fill `Reason` with one line (e.g. "superseded by
+For each confirmed decision, edit `MANIFEST.md`: set `Status` to `linked`,
+`library` or `disabled`, and fill `Reason` with one line (e.g. "superseded by
 humanizer-zh-tw — broader framework, same language scope"). Move resolved
 groups out of `## Known overlap candidates` once every skill in the group
 has a reason recorded.
@@ -131,7 +133,7 @@ sh casualattitude0-skill-collection/skill-curator/sync.sh --dry-run   # preview
 sh casualattitude0-skill-collection/skill-curator/sync.sh             # apply
 ```
 
-`enabled` rows get a symlink at `~/.claude/skills/<skill-name>` pointing at
-the repo path; `disabled` rows get their symlink removed if present. The
+`linked` rows get a symlink at `~/.claude/skills/<skill-name>` pointing at
+the repo path; `library` and `disabled` rows get their symlink removed if present. The
 script only touches links for names present in `MANIFEST.md` — it never
 touches `local-skills/`, `career/`, or anything unmanaged.
