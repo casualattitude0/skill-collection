@@ -1,9 +1,9 @@
 # Skills
 
 A vendoring ledger for a library of Claude Code Agent Skills. It records **where
-each skill came from, what version is pinned, and which ones are local**. Skills
-are activated by symlinking them into `~/.claude/skills/` — see
-[Activation](#activation).
+each skill came from, what version is pinned, and which ones are local**. A
+handful of skills are symlinked into `~/.claude/skills/`; most are served on
+demand by the `skill-library` MCP server instead — see [Activation](#activation).
 
 Sections are keyed by **upstream source**, not by folder. Sources are grouped by
 how general they are — skills that define *how the agent works* first, skills
@@ -360,9 +360,18 @@ target **Claude Code** by default; a few ship multi-harness installers.
 
 ### Claude Code (default)
 
-[`MANIFEST.md`](MANIFEST.md) records which skills are activated. Edit the
-`Status` column there (`enabled` / `disabled`, with a one-line reason), then
-reconcile the symlinks:
+[`MANIFEST.md`](MANIFEST.md) records how each skill is activated. The `Status`
+column takes one of three values, with a one-line reason:
+
+- `linked` — symlinked into `~/.claude/skills/`, so its description loads in
+  every session. Kept for the router (`manager`), skills you type as slash
+  commands, and `disable-model-invocation` skills (which cost nothing).
+- `library` — not linked. Served by the `skill-library` MCP server: jev picks it
+  and the agent loads it on demand. Zero per-session cost.
+- `disabled` — neither linked nor served.
+
+Edit the cell, then reconcile the symlinks. `sync.sh` links only `linked` rows
+and removes the symlink for everything else:
 
 ```bash
 sh casualattitude0-skill-collection/skill-curator/sync.sh --dry-run   # preview
@@ -376,22 +385,53 @@ two skills overlap or a whole stack is idle — and syncs once you confirm.
 opening a new conversation reuses that scan, so the context panel keeps
 reporting the old figure until Claude is fully quit and relaunched.
 
-`disabled` removes the symlink only; the skill stays on disk, so flipping the
-row back and re-running `sync.sh` restores it.
+Neither `library` nor `disabled` touches the skill on disk — they only drop the
+symlink — so flipping the row back and re-running `sync.sh` restores it.
+
+#### The skill library (`library` rows)
+
+[`casualattitude0-skill-collection/skill-library/server.py`](casualattitude0-skill-collection/skill-library/server.py)
+is a stdlib-only MCP server over stdio that reads `MANIFEST.md` on each call and
+exposes three tools:
+
+| Tool | What it does |
+|------|--------------|
+| `find_skill(task)` | Asks jev ([`manager/scripts/jev`](casualattitude0-skill-collection/manager/scripts/jev)) to pick from the model-invocable `library` and `linked` skills (minus the routing skills `manager` and `model-selection`); returns every candidate at or above `min_p` (default 0.05, at most 5) for the agent to choose from |
+| `get_skill(name, file?)` | Returns that skill's `SKILL.md` (or one supporting file) with relative paths resolved to the repo |
+| `list_skills()` | The catalog itself, for when jev is unavailable |
+
+The server's instructions tell the agent to call `find_skill` before a task
+that may have an established procedure, then `get_skill` and follow it. Register
+it once, at user scope:
+
+```bash
+claude mcp add --scope user skill-library -- python3 "$PWD/casualattitude0-skill-collection/skill-library/server.py"
+```
+
+Run that from the repo root (or substitute the absolute path). Changing a row
+between `library` and `disabled` needs no restart — the server re-reads the
+manifest — but `linked` changes still do (see above).
+
+**Trade-off: `library` skills are not slash commands.** Only symlinked skills
+appear in the `/` menu, so `/<skill>` stops working for a skill moved to
+`library`; it is reachable only when the agent picks it. Any skill you invoke by
+typing its name belongs in `linked`.
 
 **`sync.sh` reconciles symlinks, not hooks.** `cross-model-review` is the one
-skill here that also needs a hook registered in `settings.json`, so enabling its
+skill here that also needs a hook registered in `settings.json`, so linking its
 manifest row installs the skill but not its gate — see
 [its INSTALL.md](casualattitude0-skill-collection/cross-model-review/INSTALL.md).
-Disabling the row leaves the hook in place; it is written to no-op when the
-skill is gone, so it goes quiet rather than erroring on every turn.
+The hook resolves its script under `~/.claude/skills/`, so it only gates while
+the row is `linked`; as `library` (its current status) or `disabled` the hook
+stays in place but no-ops, going quiet rather than erroring on every turn.
 
-**Activation is not free.** Every enabled skill's name and description load on
-every turn. As of 2026-07-30, **61 of the manifest's 115 rows are enabled,
-costing ~5.1k tokens** (62 skills load — the extra is unmanaged `find-skills`),
-down from ~8.2k after disabling the idle Go, Flutter and Vue stacks, the 22
-career skills, and five redundant ones. Re-enable a stack when you next work
-in it.
+**Linking is not free.** Every linked skill's name and description load on
+every turn; `library` skills cost nothing until fetched. As of 2026-10-17 the
+manifest has **16 `linked`, 74 `library` and 54 `disabled` rows**, cutting
+per-session skill descriptions from ~30.8k to ~3.1k chars. Before that split, on 2026-07-30, 61 of the then 115 rows were
+symlinked, costing ~5.1k tokens (down from ~8.2k after disabling the idle Go,
+Flutter and Vue stacks, the 22 career skills, and five redundant ones). Move a
+disabled stack to `library` when you next work in it.
 
 That is not the whole `Skills` block: plugin and CLI-bundled skills add ~3.2k
 more and are invisible to this manifest. The Figma and Miro plugins are ~2.4k
