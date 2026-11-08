@@ -26,6 +26,7 @@ version you hold.
 | [mattpocock/skills](https://github.com/mattpocock/skills) | 260,313 | 22 | 2026-07-01 | `3cca18b` |
 | [anthropics/skills](https://github.com/anthropics/skills) | 175,952 | 10 | 2026-06-16 | `34040c9` |
 | [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) | 136,431 | 6 | 2026-07-22 | `356918e` |
+| [D4Vinci/Scrapling](https://github.com/D4Vinci/Scrapling) | 99,432 | 1 | 2026-11-08 | `bc60248` |
 | [Panniantong/agent-reach](https://github.com/Panniantong/agent-reach) | 79,647 | 1 | 2026-07-30 | `da5044d` |
 | [github/awesome-copilot](https://github.com/github/awesome-copilot) | 38,930 | 3 | 2026-06-16 | `7568a48` |
 | [pbakaus/impeccable](https://github.com/pbakaus/impeccable) | 67,527 | 1 | 2026-07-01 | `cb56ed6` |
@@ -44,7 +45,7 @@ version you hold.
 | [Graphify-Labs/graphify](https://github.com/Graphify-Labs/graphify) | — | 1 | 2026-07-30 | `v0.9.23` |
 | [casualattitude0](https://github.com/casualattitude0/skill-collection) | — | 13 | — | n/a |
 
-**93 skills · 80 vendored from 19 upstreams · 13 by casualattitude0 · 18 pinned to
+**94 skills · 81 vendored from 20 upstreams · 13 by casualattitude0 · 19 pinned to
 a commit, 1 to a version.**
 
 `Graphify-Labs/graphify` is the one upstream not synced from a checkout: the
@@ -173,6 +174,22 @@ Upstream is a Python package — only `agent_reach/skill/` is vendored here. The
 `~/.local/bin/agent-reach`); run `agent-reach doctor --json` to see which
 backend serves each platform. Multi-backend platforms need the user's own
 logged-in session or cookies; six channels work with zero config.
+
+### [D4Vinci/Scrapling](https://github.com/D4Vinci/Scrapling) — 1 skill
+
+**Source** `git@github.com:D4Vinci/Scrapling.git` · pinned `bc60248` (skill version 0.5.1, vendored 2026-11-08)
+
+`scrapling-official` — the library author's own skill for Scrapling: the
+`scrapling extract` CLI (HTTP `get` and stealth-browser `fetch`, with
+Cloudflare solving), plus `references/` and `examples/` for writing Python
+fetchers, parsers and spiders. Picks up where agent-reach's `web` channel
+(Jina Reader only) stops: JS-rendered pages, anti-bot protection, multi-page
+crawls, and scraping code.
+
+Only `agent-skill/Scrapling-Skill/` is vendored. The library installs
+separately — `uv tool install "scrapling[shell]"` gives the `extract` command;
+`scrapling install` downloads the browsers the `fetch` tier needs. The
+upstream MCP server is not used here.
 
 ### [github/awesome-copilot](https://github.com/github/awesome-copilot) — 3 skills
 

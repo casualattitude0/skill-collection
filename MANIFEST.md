@@ -69,6 +69,7 @@ None of these delete anything; change the cell and run `sync.sh`.
 | whereto | casualattitude0-skill-collection/whereto | library |  |
 | avoid-ai-writing | conorbronsdon-avoid-ai-writing/avoid-ai-writing | library |  |
 | playwright-best-practices | currents-dev-playwright-best-practices-skill/playwright-best-practices | library | kept — Playwright-specific reference, not redundant with the framework-agnostic frontend-testing-best-practices |
+| scrapling-official | d4vinci-scrapling/scrapling-official | library | scraping beyond agent-reach's Jina-only `web` channel — JS pages, anti-bot, spiders, scraping code; agent-reach stays the router for platform reads |
 | ponytail | dietrichgebert-ponytail/ponytail | library |  |
 | ponytail-audit | dietrichgebert-ponytail/ponytail-audit | library |  |
 | ponytail-debt | dietrichgebert-ponytail/ponytail-debt | library |  |
